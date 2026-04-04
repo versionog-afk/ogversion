@@ -1,7 +1,7 @@
 {
   "rewrites": [
+    { "source": "/", "destination": "/bilietai/admin.html" },
     { "source": "/admin.html", "destination": "/bilietai/admin.html" },
-    { "source": "/door.html", "destination": "/bilietai/door.html" },
-    { "source": "/", "destination": "/bilietai/admin.html" }
+    { "source": "/door.html", "destination": "/bilietai/door.html" }
   ]
 }
