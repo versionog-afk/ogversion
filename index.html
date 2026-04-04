@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="lt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>OG VERSION</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&family=Bebas+Neue&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#fff;--bg2:#f5f5f5;--bg3:#e8e8e8;--text:#111;--text2:#555;--text3:#999;--accent:#e01e1e;--black:#111;--white:#fff;--font:'DM Sans',Helvetica,Arial,sans-serif;--font-head:'Bebas Neue',Impact,sans-serif;--font-mono:'Space Mono',monospace}
+html{scroll-behavior:smooth}
+body{font-family:var(--font);background:var(--bg);color:var(--text);overflow-x:hidden;-webkit-font-smoothing:antialiased}
+a{text-decoration:none;color:inherit}
+button{cursor:pointer;font-family:var(--font)}
+img{display:block;max-width:100%}
+.announce{background:var(--black);color:var(--white);text-align:center;padding:10px 1rem;font-size:.7rem;letter-spacing:3px;text-transform:uppercase;font-weight:500}
+.announce span{color:var(--accent)}
+nav{position:sticky;top:0;z-index:100;background:var(--bg);border-bottom:1px solid #e0e0e0;padding:0 clamp(1.5rem,5vw,4rem);height:60px;display:flex;align-items:center;justify-content:space-between}
+.logo{font-family:var(--font-head);font-size:1.6rem;letter-spacing:3px;color:var(--text);font-weight:700}
+.logo em{font-style:normal;color:var(--accent)}
+.nav-center{display:flex;gap:2.5rem}
+.nav-center a{font-size:.75rem;letter-spacing:2px;text-transform:uppercase;font-weight:600;color:var(--text);transition:color .2s;position:relative}
+.nav-center a:hover{color:var(--accent)}
+.nav-center a::after{content:'';position:absolute;bottom:-2px;left:0;width:0;height:1.5px;background:var(--accent);transition:width .3s}
+.nav-center a:hover::after{width:100%}
+.nav-right{display:flex;gap:1.5rem;align-items:center}
+.nav-icon{background:none;border:none;color:var(--text);position:relative;padding:4px}
+.nav-icon svg{width:20px;height:20px}
+.cart-badge{position:absolute;top:-4px;right:-6px;background:var(--accent);color:#fff;font-size:.55rem;font-weight:700;width:16px;height:16px;border-radius:50%;display:flex;align-items:center;justify-content:center}
+.hamburger{display:none;background:none;border:none;flex-direction:column;gap:5px;padding:4px}
+.hamburger span{display:block;width:22px;height:1.5px;background:var(--text);transition:all .3s}
+.hero{display:grid;grid-template-columns:1fr 1fr;min-height:85vh;overflow:hidden}
+.hero-left{display:flex;flex-direction:column;justify-content:center;padding:clamp(2rem,6vw,6rem);background:var(--bg)}
+.hero-tag{font-family:var(--font-mono);font-size:.65rem;letter-spacing:4px;text-transform:uppercase;color:var(--accent);margin-bottom:1.5rem}
+.hero h1{font-family:var(--font-head);font-size:clamp(3rem,7vw,6rem);line-height:.9;letter-spacing:-1px;margin-bottom:1.5rem}
+.hero p{font-size:1rem;color:var(--text2);line-height:1.7;max-width:400px;margin-bottom:2.5rem;font-weight:300}
+.hero-btns{display:flex;gap:1rem;flex-wrap:wrap}
+.btn{padding:14px 32px;font-size:.75rem;font-weight:600;letter-spacing:2px;text-transform:uppercase;border-radius:0;transition:all .25s;border:2px solid var(--black)}
+.btn-fill{background:var(--black);color:var(--white)}
+.btn-fill:hover{background:var(--accent);border-color:var(--accent)}
+.btn-outline{background:transparent;color:var(--black)}
+.btn-outline:hover{background:var(--black);color:var(--white)}
+.hero-right{background:var(--bg2);display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden}
+.hero-visual{text-align:center;position:relative;z-index:2}
+.hero-visual .big-text{font-family:var(--font-head);font-size:clamp(8rem,18vw,16rem);color:rgba(0,0,0,.04);line-height:.85;user-select:none;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%)}
+.hero-product{width:clamp(250px,60%,400px);aspect-ratio:1;background:var(--bg3);border-radius:4px;display:flex;align-items:center;justify-content:center;position:relative}
+.hero-product-label{position:absolute;bottom:-30px;font-family:var(--font-mono);font-size:.65rem;letter-spacing:3px;text-transform:uppercase;color:var(--text3)}
+.marquee{border-top:1px solid #e0e0e0;border-bottom:1px solid #e0e0e0;padding:1rem 0;overflow:hidden;background:var(--bg)}
+.marquee-track{display:flex;gap:3rem;animation:marquee 30s linear infinite;width:max-content}
+.marquee-track span{font-family:var(--font-head);font-size:1.1rem;letter-spacing:4px;color:var(--text3);white-space:nowrap}
+.marquee-track .sep{color:var(--accent)}
+@keyframes marquee{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
+.section{padding:clamp(3rem,8vw,6rem) clamp(1.5rem,5vw,4rem)}
+.section-header{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:2.5rem;flex-wrap:wrap;gap:1rem}
+.section-label{font-family:var(--font-mono);font-size:.6rem;letter-spacing:4px;text-transform:uppercase;color:var(--accent);margin-bottom:.5rem}
+.section-title{font-family:var(--font-head);font-size:clamp(2rem,5vw,3.5rem);letter-spacing:1px;line-height:1}
+.view-all{font-size:.75rem;letter-spacing:2px;text-transform:uppercase;font-weight:600;color:var(--text);border-bottom:1.5px solid var(--text);padding-bottom:2px;transition:color .2s,border-color .2s}
+.view-all:hover{color:var(--accent);border-color:var(--accent)}
+.filters{display:flex;gap:.5rem;margin-bottom:2.5rem;flex-wrap:wrap}
+.fbtn{background:transparent;border:1.5px solid #ddd;padding:8px 20px;font-size:.7rem;letter-spacing:2px;text-transform:uppercase;font-weight:600;color:var(--text2);transition:all .2s}
+.fbtn:hover,.fbtn.active{background:var(--black);color:var(--white);border-color:var(--black)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:1.5rem;max-width:1300px;margin:0 auto}
+.card{position:relative;cursor:pointer;overflow:hidden;transition:transform .3s}
+.card:hover{transform:translateY(-3px)}
+.card-badge{position:absolute;top:10px;left:10px;background:var(--accent);color:#fff;font-family:var(--font-mono);font-size:.55rem;letter-spacing:2px;text-transform:uppercase;padding:4px 10px;z-index:2;font-weight:700}
+.card-badge.new{background:var(--black)}
+.card-badge.sold{background:#888}
+.card-img{width:100%;aspect-ratio:1;background:var(--bg2);display:flex;align-items:center;justify-content:center;overflow:hidden;position:relative}
+.card-img .ph{font-family:var(--font-head);font-size:2rem;color:#ddd;letter-spacing:4px;user-select:none}
+.card-actions{position:absolute;bottom:10px;right:10px;display:flex;gap:6px;opacity:0;transform:translateY(8px);transition:all .3s}
+.card:hover .card-actions{opacity:1;transform:translateY(0)}
+.card-act{width:34px;height:34px;background:var(--white);border:1px solid #e0e0e0;border-radius:50%;display:flex;align-items:center;justify-content:center;transition:all .2s}
+.card-act:hover{background:var(--black);color:var(--white);border-color:var(--black)}
+.card-act svg{width:14px;height:14px}
+.card-body{padding:1rem 0}
+.card-brand{font-family:var(--font-mono);font-size:.55rem;letter-spacing:2.5px;text-transform:uppercase;color:var(--text3);margin-bottom:.3rem}
+.card-name{font-size:.9rem;font-weight:500;margin-bottom:.4rem;line-height:1.3}
+.card-price{font-size:.95rem;font-weight:700}
+.card-price .old{color:var(--text3);font-weight:400;text-decoration:line-through;margin-right:.5rem;font-size:.85rem}
+.banner{display:grid;grid-template-columns:1fr 1fr;min-height:500px;overflow:hidden}
+.banner-content{background:var(--black);color:var(--white);display:flex;flex-direction:column;justify-content:center;padding:clamp(2rem,6vw,5rem)}
+.banner-content .section-label{color:var(--accent)}
+.banner-content .section-title{color:var(--white);margin-bottom:1.5rem}
+.banner-content p{color:#aaa;line-height:1.7;max-width:400px;margin-bottom:2rem;font-weight:300}
+.btn-accent{background:var(--accent);color:var(--white);border:2px solid var(--accent);padding:14px 32px;font-size:.75rem;font-weight:600;letter-spacing:2px;text-transform:uppercase;transition:all .25s}
+.btn-accent:hover{background:transparent;color:var(--accent)}
+.banner-img{background:var(--bg2);display:flex;align-items:center;justify-content:center}
+.lookbook-grid{display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:400px 300px;gap:1rem;max-width:1300px;margin:0 auto}
+.look-item{background:var(--bg2);position:relative;overflow:hidden;cursor:pointer}
+.look-item:first-child{grid-row:span 2}
+.look-item .look-overlay{position:absolute;inset:0;background:rgba(0,0,0,0);transition:background .3s;display:flex;align-items:flex-end;padding:1.5rem}
+.look-item:hover .look-overlay{background:rgba(0,0,0,.4)}
+.look-label{color:var(--white);font-family:var(--font-head);font-size:1.5rem;letter-spacing:2px;opacity:0;transform:translateY(10px);transition:all .3s}
+.look-item:hover .look-label{opacity:1;transform:translateY(0)}
+.newsletter{background:var(--bg2);text-align:center;padding:clamp(3rem,8vw,5rem) 2rem}
+.newsletter .section-title{margin-bottom:1rem}
+.newsletter p{color:var(--text2);margin-bottom:2rem;font-weight:300}
+.nl-form{display:flex;max-width:480px;margin:0 auto;gap:0}
+.nl-form input{flex:1;padding:14px 18px;border:2px solid #ddd;border-right:none;font-family:var(--font);font-size:.85rem;outline:none;transition:border-color .2s}
+.nl-form input:focus{border-color:var(--black)}
+.nl-form button{background:var(--black);color:var(--white);border:2px solid var(--black);padding:14px 28px;font-size:.7rem;letter-spacing:2px;text-transform:uppercase;font-weight:600;font-family:var(--font);transition:all .2s}
+.nl-form button:hover{background:var(--accent);border-color:var(--accent)}
+footer{background:var(--black);color:var(--white);padding:clamp(3rem,6vw,5rem) clamp(1.5rem,5vw,4rem) 2rem}
+.footer-top{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:3rem;margin-bottom:3rem}
+.footer-brand .logo{font-size:2rem;margin-bottom:1rem}
+.footer-brand p{color:#777;font-size:.85rem;line-height:1.7;max-width:300px}
+.footer-col h4{font-size:.7rem;letter-spacing:3px;text-transform:uppercase;color:var(--accent);margin-bottom:1.5rem;font-weight:600}
+.footer-col a{display:block;color:#999;font-size:.85rem;margin-bottom:.75rem;transition:color .2s}
+.footer-col a:hover{color:var(--white)}
+.footer-bottom{border-top:1px solid #222;padding-top:2rem;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:1rem}
+.footer-bottom p{color:#555;font-size:.75rem;letter-spacing:1px}
+.footer-socials{display:flex;gap:1rem}
+.footer-socials a{color:#555;transition:color .2s}
+.footer-socials a:hover{color:var(--accent)}
+.cart-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;opacity:0;visibility:hidden;transition:all .3s}
+.cart-overlay.open{opacity:1;visibility:visible}
+.cart-sidebar{position:fixed;top:0;right:0;bottom:0;width:min(420px,90vw);background:var(--bg);z-index:201;transform:translateX(100%);transition:transform .4s cubic-bezier(.16,1,.3,1);display:flex;flex-direction:column}
+.cart-sidebar.open{transform:translateX(0)}
+.cart-header{display:flex;justify-content:space-between;align-items:center;padding:1.5rem;border-bottom:1px solid #e0e0e0}
+.cart-header h3{font-family:var(--font-head);font-size:1.5rem;letter-spacing:2px}
+.cart-close{background:none;border:none;font-size:1.5rem;color:var(--text)}
+.cart-items{flex:1;overflow-y:auto;padding:1.5rem}
+.cart-item{display:flex;gap:1rem;margin-bottom:1.5rem;padding-bottom:1.5rem;border-bottom:1px solid #eee}
+.cart-item-img{width:80px;height:80px;background:var(--bg2);border-radius:4px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-family:var(--font-head);color:#ccc;font-size:.8rem;letter-spacing:2px}
+.cart-item-info{flex:1}
+.cart-item-brand{font-family:var(--font-mono);font-size:.55rem;letter-spacing:2px;text-transform:uppercase;color:var(--text3);margin-bottom:.25rem}
+.cart-item-name{font-size:.85rem;font-weight:500;margin-bottom:.25rem}
+.cart-item-size{font-size:.75rem;color:var(--text3);margin-bottom:.5rem}
+.cart-item-bottom{display:flex;justify-content:space-between;align-items:center}
+.cart-item-price{font-weight:700;font-size:.9rem}
+.cart-item-remove{background:none;border:none;color:var(--text3);font-size:.7rem;text-transform:uppercase;letter-spacing:1px;transition:color .2s}
+.cart-item-remove:hover{color:var(--accent)}
+.cart-qty{display:flex;align-items:center;gap:8px;border:1px solid #ddd;padding:2px}
+.cart-qty button{background:none;border:none;width:24px;height:24px;font-size:.9rem;color:var(--text);display:flex;align-items:center;justify-content:center}
+.cart-qty span{font-size:.8rem;font-weight:600;min-width:20px;text-align:center}
+.cart-empty{text-align:center;padding:4rem 2rem;color:var(--text3)}
+.cart-empty p{font-size:.9rem;margin-bottom:1rem}
+.cart-footer{padding:1.5rem;border-top:1px solid #e0e0e0}
+.cart-total{display:flex;justify-content:space-between;margin-bottom:1.5rem}
+.cart-total span:first-child{font-size:.75rem;letter-spacing:2px;text-transform:uppercase;color:var(--text2)}
+.cart-total span:last-child{font-family:var(--font-head);font-size:1.5rem}
+.checkout-btn{width:100%;background:var(--black);color:var(--white);border:none;padding:16px;font-size:.75rem;letter-spacing:3px;text-transform:uppercase;font-weight:600;font-family:var(--font);transition:background .2s}
+.checkout-btn:hover{background:var(--accent)}
+.toast{position:fixed;bottom:2rem;left:50%;transform:translateX(-50%) translateY(100px);background:var(--black);color:var(--white);padding:14px 28px;font-size:.8rem;font-weight:500;letter-spacing:1px;z-index:300;border-radius:4px;transition:transform .4s cubic-bezier(.16,1,.3,1);white-space:nowrap}
+.toast.show{transform:translateX(-50%) translateY(0)}
+@media(max-width:900px){
+.hero{grid-template-columns:1fr;min-height:auto}
+.hero-right{min-height:50vh}
+.banner{grid-template-columns:1fr}
+.banner-img{min-height:300px}
+.nav-center{display:none}
+.hamburger{display:flex}
+.footer-top{grid-template-columns:1fr 1fr;gap:2rem}
+.lookbook-grid{grid-template-columns:1fr 1fr;grid-template-rows:300px 250px 250px}
+.look-item:first-child{grid-row:span 1;grid-column:span 2}
+}
+@media(max-width:600px){
+.footer-top{grid-template-columns:1fr}
+.lookbook-grid{grid-template-columns:1fr;grid-template-rows:repeat(4,250px)}
+.look-item:first-child{grid-column:span 1}
+.nl-form{flex-direction:column}
+.nl-form input{border-right:2px solid #ddd;border-bottom:none}
+}
+</style>
+</head>
+<body>
+<div class="announce">Nemokamas pristatymas užsakymams nuo <span>€100</span> &nbsp;|&nbsp; Originalūs produktai su garantija</div>
+<nav>
+  <a href="#" class="logo">OG <em>VERSION</em></a>
+  <div class="nav-center">
+    <a href="#new">Naujienos</a>
+    <a href="#products">Parduotuvė</a>
+    <a href="#lookbook">Lookbook</a>
+    <a href="#about">Apie mus</a>
+  </div>
+  <div class="nav-right">
+    <button class="nav-icon" title="Paieška"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.35-4.35"/></svg></button>
+    <button class="nav-icon" title="Paskyra"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></button>
+    <button class="nav-icon" id="cartToggle" title="Krepšelis"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg><span class="cart-badge" id="cartBadge" style="display:none">0</span></button>
+    <button class="hamburger" id="menuToggle"><span></span><span></span><span></span></button>
+  </div>
+</nav>
+<section class="hero" id="new">
+  <div class="hero-left">
+    <div class="hero-tag">SS26 Kolekcija</div>
+    <h1>THE<br>ORIGINAL<br>VERSION.</h1>
+    <p>Autentiški streetwear drabužiai ir avalynė. Tik originalai. Jokių kopijų. Nuo 2024.</p>
+    <div class="hero-btns">
+      <a href="#products" class="btn btn-fill">Pirkti dabar</a>
+      <a href="#lookbook" class="btn btn-outline">Lookbook</a>
+    </div>
+  </div>
+  <div class="hero-right">
+    <div class="hero-visual">
+      <div class="big-text">OG</div>
+      <div class="hero-product"><span style="font-family:var(--font-head);font-size:3rem;color:#ccc;letter-spacing:6px">OG V</span></div>
+      <div class="hero-product-label">Featured — OG Box Logo Hoodie</div>
+    </div>
+  </div>
+</section>
+<div class="marquee">
+  <div class="marquee-track">
+    <span>Originalūs produktai</span><span class="sep">●</span>
+    <span>Nemokamas grąžinimas</span><span class="sep">●</span>
+    <span>Greitas pristatymas</span><span class="sep">●</span>
+    <span>Limituotos kolekcijos</span><span class="sep">●</span>
+    <span>100% autentiški</span><span class="sep">●</span>
+    <span>Originalūs produktai</span><span class="sep">●</span>
+    <span>Nemokamas grąžinimas</span><span class="sep">●</span>
+    <span>Greitas pristatymas</span><span class="sep">●</span>
+    <span>Limituotos kolekcijos</span><span class="sep">●</span>
+    <span>100% autentiški</span><span class="sep">●</span>
+  </div>
+</div>
+<section class="section">
+  <div class="section-header">
+    <div><div class="section-label">Kategorijos</div><div class="section-title">Pirkti pagal kategoriją</div></div>
+  </div>
+  <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(280px,1fr))">
+    <div class="look-item" style="height:340px;border-radius:4px;background:linear-gradient(135deg,#1a1a1a,#333)"><div class="look-overlay"><span class="look-label" style="opacity:1;transform:none">Viršutiniai drabužiai →</span></div></div>
+    <div class="look-item" style="height:340px;border-radius:4px;background:linear-gradient(135deg,#2a2a2a,#444)"><div class="look-overlay"><span class="look-label" style="opacity:1;transform:none">Marškinėliai →</span></div></div>
+    <div class="look-item" style="height:340px;border-radius:4px;background:linear-gradient(135deg,#1e1e1e,#3a3a3a)"><div class="look-overlay"><span class="look-label" style="opacity:1;transform:none">Avalynė →</span></div></div>
+    <div class="look-item" style="height:340px;border-radius:4px;background:linear-gradient(135deg,#252525,#404040)"><div class="look-overlay"><span class="look-label" style="opacity:1;transform:none">Aksesuarai →</span></div></div>
+  </div>
+</section>
+<section class="section" id="products">
+  <div class="section-header">
+    <div><div class="section-label">Parduotuvė</div><div class="section-title">Visi produktai</div></div>
+    <a href="#" class="view-all">Žiūrėti viską →</a>
+  </div>
+  <div class="filters">
+    <button class="fbtn active" onclick="filterProducts('all')">Visi</button>
+    <button class="fbtn" onclick="filterProducts('hoodie')">Hoodie</button>
+    <button class="fbtn" onclick="filterProducts('tee')">Marškinėliai</button>
+    <button class="fbtn" onclick="filterProducts('pants')">Kelnės</button>
+    <button class="fbtn" onclick="filterProducts('shoes')">Avalynė</button>
+    <button class="fbtn" onclick="filterProducts('acc')">Aksesuarai</button>
+  </div>
+  <div class="grid" id="productsGrid"></div>
+</section>
+<section class="banner">
+  <div class="banner-content">
+    <div class="section-label">Limituota</div>
+    <div class="section-title">OG Box Logo<br>Kolekcija</div>
+    <p>Rankų darbo siuvinėtas logotipas ant premium medvilnės. Kiekvienas drabužis sunumeruotas. Tik 200 vienetų.</p>
+    <a href="#products" class="btn btn-accent">Pirkti kolekciją</a>
+  </div>
+  <div class="banner-img" style="background:linear-gradient(135deg,#e8e8e8,#d0d0d0)"><span style="font-family:var(--font-head);font-size:6rem;color:#bbb;letter-spacing:8px">OG V</span></div>
+</section>
+<section class="section" id="lookbook">
+  <div class="section-header">
+    <div><div class="section-label">SS26</div><div class="section-title">Lookbook</div></div>
+  </div>
+  <div class="lookbook-grid">
+    <div class="look-item" style="background:linear-gradient(160deg,#1a1a1a,#333)"><div class="look-overlay"><span class="look-label">Editorial 01</span></div></div>
+    <div class="look-item" style="background:linear-gradient(160deg,#2c2c2c,#444)"><div class="look-overlay"><span class="look-label">Editorial 02</span></div></div>
+    <div class="look-item" style="background:linear-gradient(160deg,#222,#3a3a3a)"><div class="look-overlay"><span class="look-label">Editorial 03</span></div></div>
+    <div class="look-item" style="background:linear-gradient(160deg,#282828,#404040)"><div class="look-overlay"><span class="look-label">Editorial 04</span></div></div>
+  </div>
+</section>
+<div class="newsletter">
+  <div class="section-label" style="margin-bottom:.75rem">Naujienlaiškis</div>
+  <div class="section-title">Būk pirmas</div>
+  <p>Gauk pranešimus apie naujus drop'us ir limituotas kolekcijas.</p>
+  <div class="nl-form"><input type="email" placeholder="Tavo el. paštas"><button>Prenumeruoti</button></div>
+</div>
+<footer>
+  <div class="footer-top">
+    <div class="footer-brand"><div class="logo">OG <em>VERSION</em></div><p>Autentiški streetwear drabužiai ir avalynė. Tik originalai, jokių kompromisų.</p></div>
+    <div class="footer-col"><h4>Parduotuvė</h4><a href="#">Naujienos</a><a href="#">Hoodie</a><a href="#">Marškinėliai</a><a href="#">Kelnės</a><a href="#">Avalynė</a><a href="#">Aksesuarai</a></div>
+    <div class="footer-col"><h4>Informacija</h4><a href="#">Apie mus</a><a href="#">Kontaktai</a><a href="#">Pristatymas</a><a href="#">Grąžinimai</a><a href="#">Privatumo politika</a></div>
+    <div class="footer-col"><h4>Pagalba</h4><a href="#">DUK</a><a href="#">Dydžių lentelė</a><a href="#">Užsakymo sekimas</a><a href="#">Bendradarbiavimas</a></div>
+  </div>
+  <div class="footer-bottom"><p>© 2026 OG VERSION. Visos teisės saugomos.</p><div class="footer-socials"><a href="#">IG</a><a href="#">TW</a><a href="#">TT</a></div></div>
+</footer>
+<div class="cart-overlay" id="cartOverlay"></div>
+<div class="cart-sidebar" id="cartSidebar">
+  <div class="cart-header"><h3>Krepšelis</h3><button class="cart-close" id="cartClose">✕</button></div>
+  <div class="cart-items" id="cartItems"><div class="cart-empty"><p>Krepšelis tuščias</p><a href="#products" class="btn btn-fill" style="font-size:.7rem;padding:10px 24px" onclick="closeCart()">Pirkti</a></div></div>
+  <div class="cart-footer" id="cartFooter" style="display:none"><div class="cart-total"><span>Viso</span><span id="cartTotal">€0</span></div><button class="checkout-btn">Apmokėti →</button></div>
+</div>
+<div class="toast" id="toast"></div>
+<script>
+const products=[{id:1,name:'OG Box Logo Hoodie',brand:'OG VERSION',price:189,cat:'hoodie',badge:'new',img:'BOX'},{id:2,name:'Classic Tee — Black',brand:'OG VERSION',price:59,cat:'tee',badge:'',img:'TEE'},{id:3,name:'OG Cargo Pants — Olive',brand:'OG VERSION',price:139,cat:'pants',badge:'new',img:'CRG'},{id:4,name:'Retro Runner V1',brand:'OG VERSION',price:219,oldPrice:259,cat:'shoes',badge:'sale',img:'RNR'},{id:5,name:'Oversized Hoodie — Grey',brand:'OG VERSION',price:169,cat:'hoodie',badge:'',img:'OVR'},{id:6,name:'Logo Cap — Black',brand:'OG VERSION',price:45,cat:'acc',badge:'',img:'CAP'},{id:7,name:'OG Track Jacket',brand:'OG VERSION',price:199,cat:'hoodie',badge:'new',img:'TRK'},{id:8,name:'Graphic Tee — Archive',brand:'OG VERSION',price:69,cat:'tee',badge:'',img:'ARC'},{id:9,name:'Wide Leg Denim',brand:'OG VERSION',price:159,cat:'pants',badge:'',img:'DNM'},{id:10,name:'High Top OG-1',brand:'OG VERSION',price:249,cat:'shoes',badge:'new',img:'HI1'},{id:11,name:'Beanie — Ribbed',brand:'OG VERSION',price:35,cat:'acc',badge:'',img:'BNE'},{id:12,name:'Heavyweight Hoodie',brand:'OG VERSION',price:209,oldPrice:249,cat:'hoodie',badge:'sale',img:'HVY'}];
+let cart=[];
+function renderProducts(filter='all'){const grid=document.getElementById('productsGrid');const filtered=filter==='all'?products:products.filter(p=>p.cat===filter);grid.innerHTML=filtered.map(p=>`<div class="card" data-cat="${p.cat}">${p.badge?`<div class="card-badge ${p.badge}">${p.badge==='new'?'Naujiena':p.badge==='sale'?'Nuolaida':''}</div>`:''}<div class="card-img"><span class="ph">${p.img}</span><div class="card-actions"><button class="card-act" onclick="event.stopPropagation();addToCart(${p.id})" title="Į krepšelį"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg></button><button class="card-act" title="Patinka"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg></button></div></div><div class="card-body"><div class="card-brand">${p.brand}</div><div class="card-name">${p.name}</div><div class="card-price">${p.oldPrice?`<span class="old">€${p.oldPrice}</span>`:''}€${p.price}</div></div></div>`).join('')}
+function filterProducts(cat){document.querySelectorAll('.fbtn').forEach(b=>b.classList.remove('active'));event.target.classList.add('active');renderProducts(cat)}
+function addToCart(id){const product=products.find(p=>p.id===id);const existing=cart.find(i=>i.id===id);if(existing){existing.qty++}else{cart.push({...product,qty:1})}updateCart();showToast(`${product.name} pridėtas į krepšelį`)}
+function removeFromCart(id){cart=cart.filter(i=>i.id!==id);updateCart()}
+function changeQty(id,delta){const item=cart.find(i=>i.id===id);if(item){item.qty+=delta;if(item.qty<=0)cart=cart.filter(i=>i.id!==id)}updateCart()}
+function updateCart(){const badge=document.getElementById('cartBadge');const total=cart.reduce((s,i)=>s+i.qty,0);badge.textContent=total;badge.style.display=total>0?'flex':'none';const items=document.getElementById('cartItems');const footer=document.getElementById('cartFooter');if(cart.length===0){items.innerHTML='<div class="cart-empty"><p>Krepšelis tuščias</p></div>';footer.style.display='none'}else{items.innerHTML=cart.map(i=>`<div class="cart-item"><div class="cart-item-img">${i.img}</div><div class="cart-item-info"><div class="cart-item-brand">${i.brand}</div><div class="cart-item-name">${i.name}</div><div class="cart-item-size">Dydis: M</div><div class="cart-item-bottom"><div class="cart-qty"><button onclick="changeQty(${i.id},-1)">−</button><span>${i.qty}</span><button onclick="changeQty(${i.id},1)">+</button></div><div class="cart-item-price">€${i.price*i.qty}</div></div><button class="cart-item-remove" onclick="removeFromCart(${i.id})">Pašalinti</button></div></div>`).join('');footer.style.display='block';document.getElementById('cartTotal').textContent='€'+cart.reduce((s,i)=>s+i.price*i.qty,0)}}
+function openCart(){document.getElementById('cartOverlay').classList.add('open');document.getElementById('cartSidebar').classList.add('open');document.body.style.overflow='hidden'}
+function closeCart(){document.getElementById('cartOverlay').classList.remove('open');document.getElementById('cartSidebar').classList.remove('open');document.body.style.overflow=''}
+document.getElementById('cartToggle').addEventListener('click',openCart);
+document.getElementById('cartClose').addEventListener('click',closeCart);
+document.getElementById('cartOverlay').addEventListener('click',closeCart);
+function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2500)}
+renderProducts();
+</script>
+</body>
+</html>
