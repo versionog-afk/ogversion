@@ -1,0 +1,238 @@
+!DOCTYPE html>
+<html lang="lt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin – Bilietų sistema</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #0a0a0a; color: #f0f0f0; font-family: 'Courier New', monospace; min-height: 100vh; }
+  .header { border-bottom: 1px solid #222; padding: 16px 24px; display: flex; justify-content: space-between; align-items: center; }
+  .logo-sub { font-size: 11px; color: #666; letter-spacing: 4px; text-transform: uppercase; }
+  .logo { font-size: 20px; font-weight: 700; color: #e8ff47; letter-spacing: -1px; }
+  .nav { display: flex; gap: 8px; }
+  .nav a { padding: 8px 18px; border: 1px solid #333; color: #666; text-decoration: none; font-size: 12px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; }
+  .nav a.active { border-color: #e8ff47; background: #e8ff47; color: #000; }
+  .container { max-width: 640px; margin: 0 auto; padding: 32px 24px; }
+  .event-card { border: 1px solid #222; padding: 20px; margin-bottom: 28px; position: relative; overflow: hidden; }
+  .event-badge { position: absolute; top: 0; right: 0; background: #e8ff47; color: #000; font-size: 10px; padding: 4px 10px; font-weight: 700; letter-spacing: 2px; }
+  .event-name { font-size: 18px; font-weight: 700; margin-bottom: 6px; }
+  .event-meta { color: #666; font-size: 13px; }
+  .tabs { display: flex; border-bottom: 1px solid #222; margin-bottom: 24px; }
+  .tab { padding: 10px 20px; background: transparent; border: none; border-bottom: 2px solid transparent; color: #666; cursor: pointer; font-family: inherit; font-size: 13px; }
+  .tab.active { border-bottom-color: #e8ff47; color: #e8ff47; font-weight: 700; }
+  label { display: block; font-size: 11px; color: #666; letter-spacing: 3px; text-transform: uppercase; margin-bottom: 8px; }
+  input { width: 100%; background: #111; border: 1px solid #222; color: #f0f0f0; padding: 14px 16px; font-family: inherit; font-size: 14px; outline: none; margin-bottom: 16px; }
+  input:focus { border-color: #e8ff47; }
+  .btn { width: 100%; padding: 14px 24px; background: #e8ff47; border: 1px solid #e8ff47; color: #000; cursor: pointer; font-family: inherit; font-size: 13px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; }
+  .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+  .btn-outline { background: transparent; border-color: #333; color: #666; }
+  .success-box { background: rgba(74,222,128,0.08); border: 1px solid #4ade80; padding: 16px; margin-bottom: 20px; }
+  .success-title { color: #4ade80; font-weight: 700; margin-bottom: 4px; }
+  .ticket-preview { border: 1px solid #e8ff47; padding: 24px; display: flex; gap: 20px; align-items: center; background: #0f0f0f; margin-bottom: 20px; }
+  .ticket-id { font-size: 22px; font-weight: 700; color: #e8ff47; letter-spacing: 2px; margin-bottom: 12px; }
+  .ticket-name { font-size: 14px; margin-bottom: 4px; }
+  .ticket-meta { font-size: 12px; color: #666; }
+  .ticket-item { border: 1px solid #222; padding: 14px 16px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; background: #111; }
+  .ticket-item.used { background: #0f0f0f; }
+  .ticket-item-name { font-size: 13px; font-weight: 700; }
+  .ticket-item-meta { font-size: 11px; color: #666; margin-top: 2px; }
+  .badge { font-size: 10px; font-weight: 700; letter-spacing: 2px; border: 1px solid; padding: 3px 8px; }
+  .badge.active { color: #4ade80; border-color: #4ade80; }
+  .badge.used { color: #444; border-color: #333; }
+  .stats { display: flex; gap: 12px; margin-bottom: 16px; }
+  .stat { flex: 1; border: 1px solid #222; padding: 14px; text-align: center; }
+  .stat-num { font-size: 24px; font-weight: 700; color: #e8ff47; }
+  .stat-label { font-size: 11px; color: #666; letter-spacing: 2px; text-transform: uppercase; margin-top: 4px; }
+  #pane-generate, #pane-list { display: none; }
+  #pane-generate.show, #pane-list.show { display: block; }
+  #generated-view { display: none; }
+  #generated-view.show { display: block; }
+  #form-view { display: block; }
+  #form-view.hide { display: none; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div>
+    <div class="logo-sub">ogversion.com</div>
+    <div class="logo">Bilietų Sistema</div>
+  </div>
+  <nav class="nav">
+    <a href="admin.html" class="active">⚙ Admin</a>
+    <a href="door.html">🚪 Durys</a>
+  </nav>
+</div>
+
+<div class="container">
+  <div class="event-card">
+    <div class="event-badge">RENGINIS</div>
+    <div class="event-name" id="event-name">Naktinis Renginis 2026</div>
+    <div class="event-meta" id="event-meta">2026-05-15 · Vilnius, Loftas · €25</div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('generate')">Generuoti bilietą</button>
+    <button class="tab" id="tab-list" onclick="switchTab('list')">Bilietai (<span id="ticket-count">0</span>)</button>
+  </div>
+
+  <!-- GENERATE PANE -->
+  <div id="pane-generate" class="show">
+    <div id="form-view">
+      <label>Pirkėjo vardas</label>
+      <input type="text" id="buyer-name" placeholder="Jonas Jonaitis">
+      <label>El. paštas</label>
+      <input type="email" id="buyer-email" placeholder="jonas@email.com">
+      <button class="btn" id="gen-btn" onclick="generateTicket()">Generuoti bilietą →</button>
+    </div>
+
+    <div id="generated-view">
+      <div class="success-box">
+        <div class="success-title">✓ Bilietas sukurtas</div>
+        <div id="gen-info" style="font-size:13px;color:#666;"></div>
+      </div>
+      <div class="ticket-preview">
+        <img id="qr-img" src="" alt="QR" style="width:110px;height:110px;border:1px solid #222;">
+        <div>
+          <div style="font-size:10px;color:#666;letter-spacing:3px;margin-bottom:4px;">BILIETO ID</div>
+          <div class="ticket-id" id="gen-id"></div>
+          <div class="ticket-name" id="gen-name"></div>
+          <div class="ticket-meta" id="gen-email"></div>
+          <div class="ticket-meta" style="margin-top:8px;" id="gen-event"></div>
+        </div>
+      </div>
+      <button class="btn btn-outline" onclick="resetForm()">+ Generuoti kitą bilietą</button>
+    </div>
+  </div>
+
+  <!-- LIST PANE -->
+  <div id="pane-list">
+    <div class="stats">
+      <div class="stat"><div class="stat-num" id="stat-total">0</div><div class="stat-label">Iš viso</div></div>
+      <div class="stat"><div class="stat-num" id="stat-used">0</div><div class="stat-label">Panaudota</div></div>
+      <div class="stat"><div class="stat-num" id="stat-active">0</div><div class="stat-label">Aktyvūs</div></div>
+    </div>
+    <div id="ticket-list"></div>
+  </div>
+</div>
+
+<script>
+// =============================================
+// PAKEISK ŠIAS REIKŠMES SAVO DUOMENIMIS:
+const SUPABASE_URL = 'https://xxxx.supabase.co'
+const SUPABASE_ANON_KEY = 'eyJ...'
+// =============================================
+
+const EVENT = {
+  name: 'Naktinis Renginis 2026',
+  date: '2026-05-15',
+  venue: 'Vilnius, Loftas'
+}
+
+const { createClient } = supabase
+const db = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+
+function generateId() {
+  return 'TKT-' + Math.random().toString(36).substr(2, 8).toUpperCase()
+}
+
+function getQR(id) {
+  return `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${id}&bgcolor=0f0f0f&color=e8ff47&margin=10`
+}
+
+async function generateTicket() {
+  const name = document.getElementById('buyer-name').value.trim()
+  const email = document.getElementById('buyer-email').value.trim()
+  if (!name || !email) return alert('Įvesk vardą ir el. paštą')
+
+  const id = generateId()
+  const btn = document.getElementById('gen-btn')
+  btn.disabled = true
+  btn.textContent = 'Kuriama...'
+
+  const { error } = await db.from('tickets').insert({
+    id, name, email,
+    event: EVENT.name,
+    created_at: new Date().toISOString(),
+    used: false
+  })
+
+  if (error) {
+    alert('Klaida: ' + error.message)
+    btn.disabled = false
+    btn.textContent = 'Generuoti bilietą →'
+    return
+  }
+
+  document.getElementById('qr-img').src = getQR(id)
+  document.getElementById('gen-id').textContent = id
+  document.getElementById('gen-name').textContent = name
+  document.getElementById('gen-email').textContent = email
+  document.getElementById('gen-event').textContent = EVENT.name + ' · ' + EVENT.date
+  document.getElementById('gen-info').textContent = name + ' · ' + email
+
+  document.getElementById('form-view').classList.add('hide')
+  document.getElementById('generated-view').classList.add('show')
+
+  loadTickets()
+}
+
+function resetForm() {
+  document.getElementById('buyer-name').value = ''
+  document.getElementById('buyer-email').value = ''
+  document.getElementById('form-view').classList.remove('hide')
+  document.getElementById('generated-view').classList.remove('show')
+  const btn = document.getElementById('gen-btn')
+  btn.disabled = false
+  btn.textContent = 'Generuoti bilietą →'
+}
+
+async function loadTickets() {
+  const { data } = await db.from('tickets').select('*').order('created_at', { ascending: false })
+  if (!data) return
+
+  const total = data.length
+  const used = data.filter(t => t.used).length
+  document.getElementById('ticket-count').textContent = total
+  document.getElementById('stat-total').textContent = total
+  document.getElementById('stat-used').textContent = used
+  document.getElementById('stat-active').textContent = total - used
+
+  const list = document.getElementById('ticket-list')
+  if (total === 0) {
+    list.innerHTML = '<div style="text-align:center;color:#444;padding:40px 0;">Nėra bilietų.</div>'
+    return
+  }
+
+  list.innerHTML = data.map(t => `
+    <div class="ticket-item ${t.used ? 'used' : ''}">
+      <div>
+        <div class="ticket-item-name" style="color:${t.used ? '#444' : '#f0f0f0'}">${t.name}</div>
+        <div class="ticket-item-meta">${t.id} · ${t.email}</div>
+      </div>
+      <div class="badge ${t.used ? 'used' : 'active'}">${t.used ? 'NAUDOTAS' : 'AKTYVUS'}</div>
+    </div>
+  `).join('')
+}
+
+function switchTab(tab) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'))
+  document.getElementById('pane-generate').classList.remove('show')
+  document.getElementById('pane-list').classList.remove('show')
+
+  if (tab === 'generate') {
+    document.querySelectorAll('.tab')[0].classList.add('active')
+    document.getElementById('pane-generate').classList.add('show')
+  } else {
+    document.querySelectorAll('.tab')[1].classList.add('active')
+    document.getElementById('pane-list').classList.add('show')
+    loadTickets()
+  }
+}
+
+loadTickets()
+</script>
+</body>
+</html>
