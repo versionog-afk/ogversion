@@ -1,7 +1,19 @@
 {
   "rewrites": [
-    { "source": "/", "destination": "/bilietai/admin.html" },
-    { "source": "/admin.html", "destination": "/bilietai/admin.html" },
-    { "source": "/door.html", "destination": "/bilietai/door.html" }
+    {
+      "source": "/",
+      "destination": "/bilietai/admin.html",
+      "has": [{"type": "host", "value": "bilietai.ogversion.com"}]
+    },
+    {
+      "source": "/admin.html",
+      "destination": "/bilietai/admin.html",
+      "has": [{"type": "host", "value": "bilietai.ogversion.com"}]
+    },
+    {
+      "source": "/door.html",
+      "destination": "/bilietai/door.html",
+      "has": [{"type": "host", "value": "bilietai.ogversion.com"}]
+    }
   ]
 }
