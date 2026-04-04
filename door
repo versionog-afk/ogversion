@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="lt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Check-in – Durys</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #0a0a0a; color: #f0f0f0; font-family: 'Courier New', monospace; min-height: 100vh; }
+  .header { border-bottom: 1px solid #222; padding: 16px 24px; display: flex; justify-content: space-between; align-items: center; }
+  .logo-sub { font-size: 11px; color: #666; letter-spacing: 4px; text-transform: uppercase; }
+  .logo { font-size: 20px; font-weight: 700; color: #e8ff47; letter-spacing: -1px; }
+  .nav { display: flex; gap: 8px; }
+  .nav a { padding: 8px 18px; border: 1px solid #333; color: #666; text-decoration: none; font-size: 12px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; }
+  .nav a.active { border-color: #e8ff47; background: #e8ff47; color: #000; }
+  .container { max-width: 480px; margin: 0 auto; padding: 32px 24px; }
+  .door-header { text-align: center; margin-bottom: 32px; }
+  .door-icon { font-size: 48px; margin-bottom: 12px; }
+  .door-title { font-size: 22px; font-weight: 700; margin-bottom: 6px; }
+  .door-meta { font-size: 13px; color: #666; }
+  label { display: block; font-size: 11px; color: #666; letter-spacing: 3px; text-transform: uppercase; margin-bottom: 8px; }
+  input { width: 100%; background: #111; border: 1px solid #222; color: #e8ff47; padding: 16px; font-family: inherit; font-size: 22px; font-weight: 700; letter-spacing: 4px; text-align: center; outline: none; margin-bottom: 16px; text-transform: uppercase; }
+  input:focus { border-color: #e8ff47; }
+  .btn { width: 100%; padding: 16px 24px; background: #e8ff47; border: none; color: #000; cursor: pointer; font-family: inherit; font-size: 14px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; }
+  .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+  .btn-outline { background: transparent; border: 1px solid #333; color: #666; margin-top: 12px; }
+  .result { border: 2px solid; padding: 32px; text-align: center; margin-bottom: 20px; }
+  .result.valid { border-color: #4ade80; background: rgba(74,222,128,0.06); }
+  .result.duplicate { border-color: #f87171; background: rgba(248,113,113,0.06); }
+  .result.invalid { border-color: #fbbf24; background: rgba(251,191,36,0.06); }
+  .result-icon { font-size: 56px; margin-bottom: 16px; }
+  .result-msg { font-size: 22px; font-weight: 700; margin-bottom: 12px; }
+  .result-msg.valid { color: #4ade80; }
+  .result-msg.duplicate { color: #f87171; }
+  .result-msg.invalid { color: #fbbf24; }
+  .result-name { font-size: 17px; font-weight: 700; margin-bottom: 4px; }
+  .result-email { font-size: 13px; color: #666; }
+  .result-id { font-size: 11px; color: #444; letter-spacing: 2px; margin-top: 8px; }
+  .duplicate-time { margin-top: 12px; font-size: 12px; color: #f87171; border: 1px solid #f87171; padding: 6px 14px; display: inline-block; }
+  .stats { display: flex; gap: 12px; margin-top: 40px; }
+  .stat { flex: 1; border: 1px solid #222; padding: 14px; text-align: center; }
+  .stat-num { font-size: 26px; font-weight: 700; color: #e8ff47; }
+  .stat-label { font-size: 11px; color: #666; letter-spacing: 2px; text-transform: uppercase; margin-top: 4px; }
+  #scan-form { display: block; }
+  #scan-form.hide { display: none; }
+  #result-view { display: none; }
+  #result-view.show { display: block; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div>
+    <div class="logo-sub">ogversion.com</div>
+    <div class="logo">Bilietų Sistema</div>
+  </div>
+  <nav class="nav">
+    <a href="admin.html">⚙ Admin</a>
+    <a href="door.html" class="active">🚪 Durys</a>
+  </nav>
+</div>
+
+<div class="container">
+  <div class="door-header">
+    <div class="door-icon">🚪</div>
+    <div class="door-title">Check-in prie durų</div>
+    <div class="door-meta" id="event-info">Naktinis Renginis 2026 · 2026-05-15</div>
+  </div>
+
+  <div id="scan-form">
+    <label>Įvesk bilieto ID arba nuskanuok QR</label>
+    <input type="text" id="ticket-input" placeholder="TKT-XXXXXXXX" oninput="this.value=this.value.toUpperCase()" onkeydown="handleKey(event)" autofocus>
+    <button class="btn" id="check-btn" onclick="checkTicket()">Patikrinti bilietą →</button>
+  </div>
+
+  <div id="result-view">
+    <div class="result" id="result-box">
+      <div class="result-icon" id="result-icon"></div>
+      <div class="result-msg" id="result-msg"></div>
+      <div class="result-name" id="result-name"></div>
+      <div class="result-email" id="result-email"></div>
+      <div class="result-id" id="result-id"></div>
+      <div id="duplicate-info"></div>
+    </div>
+    <button class="btn btn-outline" onclick="resetScan()">← Tikrinti kitą bilietą</button>
+  </div>
+
+  <div class="stats">
+    <div class="stat"><div class="stat-num" id="stat-total">–</div><div class="stat-label">Iš viso</div></div>
+    <div class="stat"><div class="stat-num" id="stat-in">–</div><div class="stat-label">Įleista</div></div>
+    <div class="stat"><div class="stat-num" id="stat-wait">–</div><div class="stat-label">Laukia</div></div>
+  </div>
+</div>
+
+<script>
+// =============================================
+// PAKEISK ŠIAS REIKŠMES SAVO DUOMENIMIS:
+const SUPABASE_URL = 'https://xxxx.supabase.co'
+const SUPABASE_ANON_KEY = 'eyJ...'
+// =============================================
+
+const { createClient } = supabase
+const db = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+
+function handleKey(e) {
+  if (e.key === 'Enter') checkTicket()
+}
+
+async function checkTicket() {
+  const raw = document.getElementById('ticket-input').value.trim().toUpperCase()
+  if (!raw) return
+
+  const btn = document.getElementById('check-btn')
+  btn.disabled = true
+  btn.textContent = 'Tikrinama...'
+
+  const { data: ticket } = await db.from('tickets').select('*').eq('id', raw).single()
+
+  if (!ticket) {
+    showResult('invalid', '❓', 'Bilietas nerastas', '', '', raw, null)
+    return
+  }
+
+  if (ticket.used) {
+    showResult('duplicate', '🚫', 'Jau panaudotas!', ticket.name, ticket.email, ticket.id, ticket.used_at)
+    return
+  }
+
+  await db.from('tickets').update({ used: true, used_at: new Date().toISOString() }).eq('id', raw)
+  showResult('valid', '✅', '✓ Bilietas galioja', ticket.name, ticket.email, ticket.id, null)
+  loadStats()
+}
+
+function showResult(type, icon, msg, name, email, id, usedAt) {
+  document.getElementById('result-icon').textContent = icon
+  document.getElementById('result-msg').textContent = msg
+  document.getElementById('result-msg').className = 'result-msg ' + type
+  document.getElementById('result-name').textContent = name
+  document.getElementById('result-email').textContent = email
+  document.getElementById('result-id').textContent = id
+
+  const dupInfo = document.getElementById('duplicate-info')
+  if (usedAt) {
+    const t = new Date(usedAt).toLocaleString('lt-LT')
+    dupInfo.innerHTML = `<div class="duplicate-time">Panaudotas: ${t}</div>`
+  } else {
+    dupInfo.innerHTML = ''
+  }
+
+  const box = document.getElementById('result-box')
+  box.className = 'result ' + type
+
+  document.getElementById('scan-form').classList.add('hide')
+  document.getElementById('result-view').classList.add('show')
+}
+
+function resetScan() {
+  document.getElementById('ticket-input').value = ''
+  document.getElementById('scan-form').classList.remove('hide')
+  document.getElementById('result-view').classList.remove('show')
+  document.getElementById('check-btn').disabled = false
+  document.getElementById('check-btn').textContent = 'Patikrinti bilietą →'
+  document.getElementById('ticket-input').focus()
+}
+
+async function loadStats() {
+  const { data } = await db.from('tickets').select('id, used')
+  if (!data) return
+  const total = data.length
+  const used = data.filter(t => t.used).length
+  document.getElementById('stat-total').textContent = total
+  document.getElementById('stat-in').textContent = used
+  document.getElementById('stat-wait').textContent = total - used
+}
+
+loadStats()
+</script>
+</body>
+</html>
