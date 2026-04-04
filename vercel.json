@@ -1,0 +1,10 @@
+{
+  "redirects": [
+    {
+      "source": "/",
+      "destination": "/admin.html",
+      "permanent": false,
+      "has": [{"type": "host", "value": "bilietai.ogversion.com"}]
+    }
+  ]
+}
