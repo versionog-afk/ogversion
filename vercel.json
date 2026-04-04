@@ -1,10 +1,7 @@
 {
-  "redirects": [
-    {
-      "source": "/",
-      "destination": "/admin.html",
-      "permanent": false,
-      "has": [{"type": "host", "value": "bilietai.ogversion.com"}]
-    }
+  "rewrites": [
+    { "source": "/admin.html", "destination": "/bilietai/admin.html" },
+    { "source": "/door.html", "destination": "/bilietai/door.html" },
+    { "source": "/", "destination": "/bilietai/admin.html" }
   ]
 }
