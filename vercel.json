@@ -14,6 +14,14 @@
       "source": "/door.html",
       "destination": "/bilietai/door.html",
       "has": [{"type": "host", "value": "bilietai.ogversion.com"}]
+    },
+    {
+      "source": "/47",
+      "destination": "https://studio47web.vercel.app/47"
+    },
+    {
+      "source": "/47/:path*",
+      "destination": "https://studio47web.vercel.app/47/:path*"
     }
   ]
 }
