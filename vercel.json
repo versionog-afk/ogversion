@@ -3,17 +3,32 @@
     {
       "source": "/",
       "destination": "/bilietai/admin.html",
-      "has": [{"type": "host", "value": "bilietai.ogversion.com"}]
+      "has": [
+        {
+          "type": "host",
+          "value": "bilietai.ogversion.com"
+        }
+      ]
     },
     {
       "source": "/admin.html",
       "destination": "/bilietai/admin.html",
-      "has": [{"type": "host", "value": "bilietai.ogversion.com"}]
+      "has": [
+        {
+          "type": "host",
+          "value": "bilietai.ogversion.com"
+        }
+      ]
     },
     {
       "source": "/door.html",
       "destination": "/bilietai/door.html",
-      "has": [{"type": "host", "value": "bilietai.ogversion.com"}]
+      "has": [
+        {
+          "type": "host",
+          "value": "bilietai.ogversion.com"
+        }
+      ]
     },
     {
       "source": "/47",
@@ -22,6 +37,14 @@
     {
       "source": "/47/:path*",
       "destination": "https://studio47web.vercel.app/47/:path*"
+    },
+    {
+      "source": "/radio",
+      "destination": "https://studio47web.vercel.app/47/radio"
+    },
+    {
+      "source": "/radio/:path*",
+      "destination": "https://studio47web.vercel.app/47/radio/:path*"
     }
   ]
 }
