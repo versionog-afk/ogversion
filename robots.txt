@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+Disallow: /47/admin/
+Disallow: /bilietai/
+Disallow: /admin.html
+Disallow: /door.html
+
+Sitemap: https://ogversion.com/47/sitemap.xml
