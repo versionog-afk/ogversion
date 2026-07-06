@@ -1,0 +1,33 @@
+# OG VERSION / STUDIO 47
+
+> ogversion.com hosts two related Lithuanian projects: OG VERSION, a music project from Kaunas, and STUDIO 47, a tattoo studio in Kaunas. The studio's website lives under /47 (Lithuanian by default, English under /47/en). OG Version Radio, a synchronized internet radio station playing only the artist's own catalog, streams at /radio.
+
+## STUDIO 47 — tattoo studio in Kaunas, Lithuania
+
+- Address: Taikos pr. 135D (Taikos verslo parkas), LT-51133 Kaunas, Lithuania
+- Booking: Instagram DM to @studio47tattoo (https://ig.me/m/studio47tattoo) or email studio47kaunas@gmail.com
+- Open every day, by appointment only (occasional last-minute slots announced on Instagram)
+- Work: custom tattoos drawn from scratch, adaptations of client references, and flash designs — blackwork, fineline, lettering, ornamental, dark realism
+- A free consultation and a non-refundable deposit (deducted from the final price) precede every session; minimum age 18 with photo ID
+- Languages: Lithuanian and English
+- Established 2024
+
+## Key pages
+
+- [STUDIO 47 home](https://ogversion.com/47): the studio, its ethos, process and contact CTA (Lithuanian)
+- [English version](https://ogversion.com/47/en): the same site in English
+- [FAQ](https://ogversion.com/47/faq): deposit, pricing model, pain, preparation, aftercare, cover-ups, languages
+- [Booking](https://ogversion.com/47/booking): how a session comes together — DM, free consultation, deposit
+- [Portfolio](https://ogversion.com/47/portfolio): the studio's photographed work archive
+- [About the studio](https://ogversion.com/47/about): space, standards and principles
+- [Artists](https://ogversion.com/47/artists): featured Kaunas music artists (yeru, DIRSE, MAD MONEY)
+- [Contact](https://ogversion.com/47/contact): address, map, email and hours
+
+## OG Version Radio
+
+- [Radio](https://ogversion.com/radio): a 2000s-inspired synchronized internet radio station broadcasting the OG Version catalog — one shared signal, no skips; every listener hears the same song at the same moment
+
+## Notes
+
+- Machine-readable data: https://ogversion.com/47/sitemap.xml (bilingual, hreflang), JSON-LD (TattooParlor/LocalBusiness) embedded on every page
+- The studio publishes no phone number yet; Instagram DM is the fastest channel
