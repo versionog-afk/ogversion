@@ -1,26 +1,14 @@
 {
   "trailingSlash": false,
   "rewrites": [
-    {
-      "source": "/",
-      "destination": "/bilietai/admin.html",
-      "has": [{ "type": "host", "value": "bilietai.ogversion.com" }]
-    },
-    {
-      "source": "/admin.html",
-      "destination": "/bilietai/admin.html",
-      "has": [{ "type": "host", "value": "bilietai.ogversion.com" }]
-    },
-    {
-      "source": "/door.html",
-      "destination": "/bilietai/door.html",
-      "has": [{ "type": "host", "value": "bilietai.ogversion.com" }]
-    }
+    { "source": "/", "destination": "/bilietai/admin.html", "has": [{ "type": "host", "value": "bilietai.ogversion.com" }] },
+    { "source": "/admin.html", "destination": "/bilietai/admin.html", "has": [{ "type": "host", "value": "bilietai.ogversion.com" }] },
+    { "source": "/door.html", "destination": "/bilietai/door.html", "has": [{ "type": "host", "value": "bilietai.ogversion.com" }] }
   ],
   "redirects": [
-    { "source": "/47", "destination": "https://studio47web.vercel.app/", "permanent": false },
-    { "source": "/47/:path*", "destination": "https://studio47web.vercel.app/:path*", "permanent": false },
-    { "source": "/radio", "destination": "https://studio47web.vercel.app/radio", "permanent": false },
-    { "source": "/radio/:path*", "destination": "https://studio47web.vercel.app/radio/:path*", "permanent": false }
+    { "source": "/47", "destination": "https://studio47.lt/", "permanent": false },
+    { "source": "/47/:path*", "destination": "https://studio47.lt/:path*", "permanent": false },
+    { "source": "/radio", "destination": "https://studio47.lt/radio", "permanent": false },
+    { "source": "/radio/:path*", "destination": "https://studio47.lt/radio/:path*", "permanent": false }
   ]
 }
