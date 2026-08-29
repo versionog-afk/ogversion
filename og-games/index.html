@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover">
+<title>OG VERSION — Games</title>
+<meta name="description" content="The OG VERSION arcade — browser games and experiments from the OG VERSION project.">
+<link rel="canonical" href="https://ogversion.com/og-games">
+<meta name="theme-color" content="#050505">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="OG VERSION">
+<meta property="og:title" content="OG VERSION — Games">
+<meta property="og:description" content="The OG VERSION arcade — browser games and experiments.">
+<meta property="og:url" content="https://ogversion.com/og-games">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://ogversion.com/assets/og-gate.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://ogversion.com/assets/og-gate.jpg">
+<style>
+  *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+  :root{
+    --ink:#050505;
+    --bone:#efece6;
+    --ash:#8f8f8b;
+    --signal:#c6362b;
+    --ease:cubic-bezier(.16,1,.3,1);
+    --font:"Helvetica Neue",Helvetica,"Segoe UI",Arial,sans-serif;
+    --mono:ui-monospace,"SF Mono","Space Mono",Menlo,monospace;
+    --hair:rgba(239,236,230,.14);
+  }
+  html{-webkit-text-size-adjust:100%}
+  body{
+    background:var(--ink);color:var(--bone);font-family:var(--font);
+    min-height:100svh;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;
+  }
+  .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;
+    overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+
+  /* ---- Chrome: the same two whispers as the gate ---- */
+  .bar{
+    position:sticky;top:0;z-index:30;background:var(--ink);
+    display:flex;align-items:center;justify-content:space-between;gap:1rem;
+    padding:clamp(1.2rem,3.2vh,1.9rem) clamp(1.2rem,4vw,3rem);
+    border-bottom:1px solid transparent;
+  }
+  .bar__back,.bar__mark{
+    font-family:var(--mono);font-size:.66rem;letter-spacing:.34em;text-indent:.34em;
+    text-transform:uppercase;color:var(--ash);text-decoration:none;
+  }
+  .bar__back{display:inline-flex;align-items:center;gap:.6em;transition:color .4s var(--ease)}
+  .bar__back:hover,.bar__back:focus-visible{color:var(--bone)}
+  .bar__back svg{width:1em;height:1em;overflow:visible}
+  .bar__mark{color:var(--bone);opacity:.86}
+
+  /* ---- Masthead ---- */
+  .head{
+    padding:clamp(3rem,12vh,7rem) clamp(1.2rem,4vw,3rem) clamp(2rem,6vh,3.4rem);
+    max-width:1400px;margin:0 auto;
+  }
+  .head__index{
+    display:block;font-family:var(--mono);font-size:.66rem;
+    letter-spacing:.4em;text-indent:.4em;color:var(--ash);
+    text-transform:uppercase;margin-bottom:1.4rem;
+  }
+  .head__title{
+    font-weight:500;text-transform:uppercase;line-height:.9;letter-spacing:.02em;
+    font-size:clamp(2.8rem,10vw,7rem);
+  }
+  .head__lo{
+    display:block;font-weight:300;letter-spacing:.16em;
+    font-size:clamp(.8rem,1.6vw,1.05rem);color:var(--bone);opacity:.72;
+    margin-top:1.4rem;max-width:46ch;line-height:1.7;
+  }
+  .rule{height:1px;border:0;max-width:1400px;margin:0 auto;
+    background:linear-gradient(90deg,var(--hair),transparent 80%)}
+
+  /* ---- The cabinet ---- */
+  .cabinet{
+    max-width:1400px;margin:0 auto;
+    padding:clamp(2rem,6vh,3.4rem) clamp(1.2rem,4vw,3rem) clamp(4rem,14vh,8rem);
+    display:grid;gap:clamp(1.2rem,2.6vw,2.2rem);
+    grid-template-columns:repeat(auto-fill,minmax(min(100%,270px),1fr));
+    list-style:none;
+  }
+  .cabinet>li{display:flex}
+  .card{
+    flex:1;
+    position:relative;display:flex;flex-direction:column;
+    text-decoration:none;color:var(--bone);isolation:isolate;outline:none;
+    border:1px solid var(--hair);background:#0a0a0a;
+    transition:border-color .6s var(--ease),transform .6s var(--ease);
+  }
+  .card__art{
+    position:relative;aspect-ratio:4/3;overflow:hidden;background:#0a0a0a;
+    display:flex;align-items:center;justify-content:center;
+  }
+  .card__bg{
+    position:absolute;inset:0;background-size:cover;background-position:center;
+    filter:brightness(.62) contrast(1.02) saturate(.9);
+    transform:scale(1.03);
+    transition:transform 1s var(--ease),filter 1s var(--ease);
+  }
+  /* no cover art? the slot number becomes the art */
+  .card__glyph{
+    position:relative;z-index:2;font-family:var(--mono);font-weight:400;
+    font-size:clamp(2.4rem,6vw,3.4rem);letter-spacing:.06em;color:var(--bone);
+    opacity:.18;transition:opacity .8s var(--ease);
+  }
+  .card__art::after{
+    content:"";position:absolute;inset:0;z-index:1;
+    background:linear-gradient(180deg,transparent 40%,rgba(5,5,5,.6));
+  }
+  .card__body{
+    position:relative;z-index:2;padding:1.15rem 1.25rem 1.35rem;
+    display:flex;flex-direction:column;gap:.55rem;flex:1;
+    border-top:1px solid var(--hair);
+  }
+  .card__row{display:flex;align-items:baseline;justify-content:space-between;gap:1rem}
+  .card__index{font-family:var(--mono);font-size:.62rem;letter-spacing:.34em;
+    text-indent:.34em;color:var(--ash);text-transform:uppercase}
+  .card__status{
+    font-family:var(--mono);font-size:.56rem;letter-spacing:.28em;text-indent:.28em;
+    text-transform:uppercase;color:var(--ash);white-space:nowrap;
+  }
+  .card--live .card__status{color:var(--signal)}
+  .card__title{
+    font-weight:500;text-transform:uppercase;letter-spacing:.03em;line-height:1.05;
+    font-size:clamp(1.1rem,2.2vw,1.4rem);
+  }
+  .card__note{font-size:.84rem;line-height:1.6;color:var(--ash);
+    font-weight:300;letter-spacing:.01em}
+  .card__enter{
+    margin-top:auto;padding-top:.9rem;
+    display:inline-flex;align-items:center;gap:.7em;
+    font-family:var(--mono);font-size:.6rem;letter-spacing:.3em;text-indent:.3em;
+    text-transform:uppercase;color:var(--bone);
+    opacity:0;transform:translateY(6px);
+    transition:opacity .6s var(--ease),transform .6s var(--ease);
+  }
+  .card__enter svg{width:1.1em;height:1.1em;overflow:visible}
+  .card__enter svg path{stroke:var(--signal)}
+
+  @media (hover:hover) and (pointer:fine){
+    .card:hover,.card:focus-visible{border-color:rgba(239,236,230,.32);transform:translateY(-3px)}
+    .card:hover .card__bg,.card:focus-visible .card__bg{
+      transform:scale(1.08);filter:brightness(.95) contrast(1.08) saturate(1);
+    }
+    .card:hover .card__glyph,.card:focus-visible .card__glyph{opacity:.4}
+    .card:hover .card__enter,.card:focus-visible .card__enter{opacity:.9;transform:translateY(0)}
+    .cabinet:has(.card:hover) .card:not(:hover){opacity:.55;transition:opacity .6s var(--ease)}
+  }
+  @media (hover:none){ .card__enter{opacity:.8;transform:none} }
+  .card:focus-visible{outline:1px solid rgba(239,236,230,.7);outline-offset:-1px}
+
+  /* a game that is not playable yet is a card, not a door */
+  .card--soon{cursor:default}
+  .card--soon .card__title{opacity:.62}
+  .card--soon .card__enter{display:none}
+
+  /* ---- Empty cabinet ---- */
+  .empty{
+    max-width:1400px;margin:0 auto;
+    padding:clamp(3rem,10vh,6rem) clamp(1.2rem,4vw,3rem) clamp(5rem,16vh,9rem);
+  }
+  .empty__box{
+    border:1px solid var(--hair);padding:clamp(1.8rem,5vw,3.2rem);
+    max-width:62ch;
+  }
+  .empty__label{
+    font-family:var(--mono);font-size:.62rem;letter-spacing:.34em;text-indent:.34em;
+    text-transform:uppercase;color:var(--signal);display:block;margin-bottom:1.2rem;
+  }
+  .empty__title{font-weight:500;text-transform:uppercase;letter-spacing:.03em;
+    font-size:clamp(1.2rem,3vw,1.7rem);line-height:1.15}
+  .empty__text{margin-top:1.1rem;color:var(--ash);font-weight:300;
+    font-size:.92rem;line-height:1.8}
+  .empty__text code{font-family:var(--mono);font-size:.86em;color:var(--bone);
+    background:rgba(239,236,230,.07);padding:.15em .45em}
+
+  .foot{
+    border-top:1px solid var(--hair);
+    padding:clamp(1.4rem,4vh,2.2rem) clamp(1.2rem,4vw,3rem);
+    text-align:center;font-family:var(--mono);font-size:.6rem;
+    letter-spacing:.32em;text-indent:.32em;text-transform:uppercase;color:var(--ash);
+  }
+
+  @media (prefers-reduced-motion:reduce){
+    *{animation-duration:.001ms!important;animation-iteration-count:1!important;
+      transition-duration:.001ms!important}
+    .card__enter{opacity:.85;transform:none}
+  }
+</style>
+</head>
+<body>
+  <nav class="bar">
+    <a class="bar__back" href="/">
+      <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M14 6l-6 6 6 6" stroke="currentColor" stroke-width="1.6" stroke-linecap="square"/></svg>
+      Back
+    </a>
+    <span class="bar__mark">OG Version</span>
+  </nav>
+
+  <header class="head">
+    <span class="head__index">03</span>
+    <h1 class="head__title">Games</h1>
+    <p class="head__lo">Browser games and experiments from the OG VERSION project. No installs, no accounts — press enter and play.</p>
+  </header>
+  <hr class="rule">
+
+  <ul class="cabinet" id="cabinet" hidden></ul>
+
+  <section class="empty" id="empty" hidden>
+    <div class="empty__box">
+      <span class="empty__label">Cabinet empty</span>
+      <h2 class="empty__title">No games plugged in yet</h2>
+      <p class="empty__text">
+        Games are listed from <code>og-games/games.json</code>. Drop a game folder next to it,
+        add one entry to that file, and it appears here — see <code>og-games/README.md</code>
+        for the exact shape.
+      </p>
+    </div>
+  </section>
+
+  <footer class="foot">OG Version — Arcade</footer>
+
+  <script>
+  (function(){
+    var cabinet = document.getElementById("cabinet");
+    var empty   = document.getElementById("empty");
+
+    var SVG_ENTER = '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true">' +
+      '<path d="M6 18 18 6M9 6h9v9" stroke="currentColor" stroke-width="1.6" stroke-linecap="square"/></svg>';
+
+    function pad(n){ return (n < 10 ? "0" : "") + n; }
+
+    function el(tag, cls, text){
+      var n = document.createElement(tag);
+      if (cls) n.className = cls;
+      if (text != null) n.textContent = text;
+      return n;
+    }
+
+    function card(game, i){
+      var live = game.status !== "soon";
+      var item = el("li");
+      var root = document.createElement(live ? "a" : "div");
+      root.className = "card " + (live ? "card--live" : "card--soon");
+      if (live) {
+        root.href = game.url || (game.slug + "/");
+        root.setAttribute("aria-label", "Play " + game.title);
+      }
+
+      var art = el("span", "card__art");
+      if (game.cover) {
+        var bg = el("span", "card__bg");
+        bg.style.backgroundImage = 'url("' + game.cover.replace(/"/g, "%22") + '")';
+        art.appendChild(bg);
+      } else {
+        art.appendChild(el("span", "card__glyph", pad(i + 1)));
+      }
+      root.appendChild(art);
+
+      var body = el("span", "card__body");
+      var row  = el("span", "card__row");
+      row.appendChild(el("span", "card__index", pad(i + 1)));
+      row.appendChild(el("span", "card__status", live ? "Play" : "Soon"));
+      body.appendChild(row);
+      body.appendChild(el("span", "card__title", game.title || game.slug));
+      if (game.note) body.appendChild(el("span", "card__note", game.note));
+
+      if (live) {
+        var enter = el("span", "card__enter");
+        enter.appendChild(document.createTextNode("Enter"));
+        enter.insertAdjacentHTML("beforeend", SVG_ENTER);
+        body.appendChild(enter);
+      }
+      root.appendChild(body);
+
+      item.appendChild(root);
+      return item;
+    }
+
+    function render(games){
+      if (!games || !games.length){ empty.hidden = false; return; }
+      var frag = document.createDocumentFragment();
+      games.forEach(function(g, i){ frag.appendChild(card(g, i)); });
+      cabinet.appendChild(frag);
+      cabinet.hidden = false;
+    }
+
+    fetch("games.json", { cache: "no-cache" })
+      .then(function(r){ if (!r.ok) throw new Error(r.status); return r.json(); })
+      .then(function(data){ render(Array.isArray(data) ? data : data.games); })
+      .catch(function(){ empty.hidden = false; });
+  })();
+  </script>
+</body>
+</html>
