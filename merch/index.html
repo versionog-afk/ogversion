@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="lt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover">
+<title>NA2 merch · OG Version</title>
+<meta name="description" content="Albumas „Nieko asmeniško 2“ ant marškinėlių ir džemperių. Pinigų raidės, daugiaaukštis ir 26 trekai iš Šilainių kiemo.">
+<link rel="canonical" href="https://ogversion.com/merch">
+<link rel="icon" href="/merch/assets/favicon.png">
+<meta name="theme-color" content="#05070c">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="OG VERSION">
+<meta property="og:title" content="NA2 merch · OG Version">
+<meta property="og:description" content="Albumas „Nieko asmeniško 2“ ant marškinėlių ir džemperių.">
+<meta property="og:url" content="https://ogversion.com/merch">
+<meta property="og:image" content="https://ogversion.com/merch/assets/og-na2.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=Archivo:wght@400;500;600&display=swap">
+<link rel="preload" as="image" href="/merch/assets/na2-film-poster.jpg" media="(min-width: 861px)">
+<link rel="preload" as="image" href="/merch/assets/na2-film-mobile-poster.jpg" media="(max-width: 860px)">
+<style>
+  *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+  :root{
+    --bg:#05070c; --bg2:#0b1120; --line:#1c2536; --ink:#ede9df; --muted:#8c95a6; --accent:#f2a23a;
+    --display:"Anton","Impact","Arial Narrow Bold",sans-serif;
+    --body:"Archivo",system-ui,-apple-system,Helvetica,Arial,sans-serif;
+  }
+  html{background:var(--bg);color:var(--ink);color-scheme:dark;scroll-behavior:smooth}
+  body{font-family:var(--body);line-height:1.5;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+  a{color:inherit}
+  img,video{display:block;max-width:100%}
+  .brand{position:fixed;z-index:30;top:clamp(1rem,3vw,2rem);left:clamp(1rem,4vw,4rem);font-family:var(--display);font-size:1.05rem;letter-spacing:.16em;text-decoration:none;mix-blend-mode:difference}
+  .brand:focus-visible,.route button:focus-visible,.cta-drop:focus-visible,.cta-listen:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+
+  /* ---- film ---- */
+  .film{position:relative;height:520vh;height:520dvh}
+  .stage{position:sticky;top:0;height:100vh;height:100dvh;overflow:hidden;background:var(--bg)}
+  .stage video,.stage .poster{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 50%}
+  .stage video{opacity:0;transition:opacity .4s ease}
+  .stage.ready video{opacity:1}
+  .stage.ready .poster{visibility:hidden}
+  .progress{position:absolute;z-index:5;top:0;left:0;right:0;height:2px;background:rgba(237,233,223,.14)}
+  .progress span{display:block;height:100%;width:100%;background:var(--accent);transform:scaleX(0);transform-origin:left center}
+  .route{position:absolute;z-index:6;top:clamp(1rem,3vw,2rem);right:clamp(1rem,4vw,4rem);left:clamp(1rem,4vw,4rem);display:flex;justify-content:flex-end;gap:.25rem}
+  .route button{min-height:2.75rem;padding:.65rem .9rem;border:0;background:transparent;color:var(--muted);font:inherit;font-size:.82rem;letter-spacing:.14em;text-transform:uppercase;cursor:pointer}
+  .route button:hover,.route button[aria-current="step"]{color:var(--ink)}
+  .route button[aria-current="step"]{text-decoration:underline;text-decoration-color:var(--accent);text-decoration-thickness:.15em;text-underline-offset:.3em}
+  .story{position:relative;z-index:3;margin-top:-100vh;margin-top:-100dvh;pointer-events:none}
+  .chapter{position:relative;min-height:130vh;min-height:130dvh}
+  .chapter:last-child{min-height:130vh;min-height:130dvh}
+  .pin{position:sticky;top:0;display:flex;align-items:center;min-height:100vh;min-height:100dvh;padding:clamp(5rem,9vw,8rem) clamp(1.25rem,6vw,6rem)}
+  .chapter[data-align="right"] .pin{justify-content:flex-end}
+  .copy{position:relative;width:min(40rem,48vw);pointer-events:auto}
+  .copy::before{content:"";position:absolute;z-index:-1;inset:-3rem -5rem;background:radial-gradient(ellipse at center,rgba(5,7,12,.88) 0%,rgba(5,7,12,.58) 52%,transparent 76%)}
+  .kicker{margin:0 0 1rem;color:var(--accent);font-size:.8rem;font-weight:700;letter-spacing:.18em;text-transform:uppercase}
+  .title{font-family:var(--display);font-weight:400;font-size:clamp(2.75rem,6vw,6.5rem);line-height:.92;letter-spacing:.01em;text-transform:uppercase;max-width:14ch;text-wrap:balance}
+  .body{margin-top:1.5rem;max-width:42ch;color:var(--muted);font-size:clamp(1rem,1.35vw,1.2rem);line-height:1.55}
+  .tags{display:flex;flex-wrap:wrap;gap:.55rem;margin-top:1.5rem;list-style:none}
+  .tags li{padding:.45rem .7rem;border:1px solid rgba(237,233,223,.2);font-size:.74rem;letter-spacing:.1em;text-transform:uppercase}
+
+  /* ---- sections ---- */
+  section.block{position:relative;padding:clamp(4rem,9vw,8rem) clamp(1.25rem,6vw,6rem);border-top:1px solid var(--line);background:var(--bg)}
+  h2{font-family:var(--display);font-weight:400;font-size:clamp(2.6rem,6vw,5.5rem);line-height:.95;letter-spacing:.01em;text-transform:uppercase;text-wrap:balance}
+  .lead{margin-top:1.25rem;max-width:52ch;color:var(--muted);font-size:clamp(1rem,1.3vw,1.15rem);line-height:1.55}
+  .pieces{display:grid;grid-template-columns:1.25fr 1fr;gap:1.25rem;margin-top:clamp(2rem,5vw,4rem);list-style:none}
+  .piece{display:grid;grid-template-rows:auto auto;border:1px solid var(--line);background:var(--bg2)}
+  .piece:nth-child(3){grid-column:2;grid-row:1/span 2}
+  .piece:nth-child(2),.piece:nth-child(4){grid-column:1}
+  .art{position:relative;aspect-ratio:1;overflow:hidden;background:var(--bg)}
+  .piece:nth-child(3) .art{aspect-ratio:auto;min-height:100%}
+  .art img{width:100%;height:100%;object-fit:cover;transition:transform .9s ease}
+  .tracks-tile{padding:1.5rem}
+  .tracks-tile b{display:block;font-family:var(--display);font-weight:400;font-size:3rem;line-height:1}
+  .tracks-tile ol{margin-top:1rem;list-style:none;columns:2;column-gap:1.25rem;font-size:.7rem;line-height:1.7;letter-spacing:.06em;text-transform:uppercase}
+  .tracks-tile li{display:flex;gap:.5rem;break-inside:avoid}
+  .tracks-tile li span,.tracks .n{min-width:2ch;text-align:right;color:var(--muted);font-variant-numeric:tabular-nums}
+  .cap-tile{display:grid;place-content:center;height:100%;min-height:14rem;text-align:center;font-family:var(--display)}
+  .cap-tile span{font-size:clamp(3.5rem,8vw,6rem);line-height:1;letter-spacing:.04em}
+  .cap-tile small{display:block;margin-top:.4rem;font-family:var(--body);font-size:.7rem;letter-spacing:.3em;color:var(--muted)}
+  .meta{padding:1.25rem 1.5rem 1.5rem;border-top:1px solid var(--line)}
+  .kind{font-size:.72rem;letter-spacing:.16em;text-transform:uppercase;color:var(--accent)}
+  .name{margin-top:.35rem;font-family:var(--display);font-weight:400;font-size:1.9rem;line-height:1;letter-spacing:.02em;text-transform:uppercase}
+  .spec{margin-top:.6rem;color:var(--muted);font-size:.95rem}
+  .cta-row{display:flex;flex-wrap:wrap;align-items:center;gap:1.25rem;margin-top:clamp(2rem,4vw,3rem)}
+  .note{color:var(--muted);font-size:.9rem}
+  .cta-drop{display:inline-block;padding:.95rem 1.5rem;background:var(--ink);color:var(--bg);font-weight:600;letter-spacing:.04em;text-decoration:none;transition:transform .15s ease}
+  .cta-drop:hover{transform:translateY(-1px)} .cta-drop:active{transform:translateY(1px)}
+  .album{display:grid;grid-template-columns:minmax(0,.8fr) minmax(0,1.2fr);gap:clamp(2rem,5vw,5rem);align-items:start}
+  .album .cover{position:sticky;top:4rem}
+  .album .cover img{width:100%;border:1px solid var(--line)}
+  .tracks{margin-top:clamp(1.5rem,3vw,2.5rem);list-style:none;columns:2;column-gap:2rem;font-size:.95rem;line-height:2}
+  .tracks li{display:flex;gap:.75rem;break-inside:avoid;border-bottom:1px solid var(--line)}
+  .cta-listen{display:inline-block;margin-top:2rem;font-family:var(--display);font-size:1.4rem;letter-spacing:.06em;text-transform:uppercase;text-decoration:underline;text-decoration-color:var(--accent);text-decoration-thickness:.12em;text-underline-offset:.25em}
+  .cta-listen:hover{text-decoration-thickness:.2em}
+  .strip{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(18rem,1fr);gap:1rem;margin-top:clamp(2rem,4vw,3rem);overflow-x:auto;scroll-snap-type:x mandatory;padding-bottom:.5rem}
+  .strip figure{scroll-snap-align:start}
+  .strip img{width:100%;aspect-ratio:1;object-fit:cover;border:1px solid var(--line)}
+  .strip figcaption{margin-top:.6rem;font-size:.72rem;letter-spacing:.16em;text-transform:uppercase;color:var(--muted)}
+  footer{display:flex;flex-wrap:wrap;justify-content:space-between;gap:1rem;padding:2rem clamp(1.25rem,6vw,6rem) 3rem;border-top:1px solid var(--line);color:var(--muted);font-size:.85rem;background:var(--bg)}
+  footer nav{display:flex;gap:1.5rem} footer nav a{text-decoration:none} footer nav a:hover{color:var(--ink)}
+
+  @media (max-width:860px){
+    .route{right:max(.75rem,env(safe-area-inset-right));left:max(.75rem,env(safe-area-inset-left));justify-content:flex-start;overflow-x:auto}
+    .route button{flex:0 0 auto}
+    .pin,.chapter[data-align="right"] .pin{align-items:flex-end;justify-content:flex-start;padding:6.5rem max(1.25rem,env(safe-area-inset-right)) calc(4rem + env(safe-area-inset-bottom)) max(1.25rem,env(safe-area-inset-left))}
+    .copy{width:min(100%,36rem)}
+    .copy::before{inset:-3rem -2rem;background:linear-gradient(to top,var(--bg) 0%,rgba(5,7,12,.82) 58%,transparent 100%)}
+    .pieces{grid-template-columns:1fr}
+    .piece:nth-child(n){grid-column:auto;grid-row:auto}
+    .piece:nth-child(3) .art{min-height:0}
+    .album{grid-template-columns:1fr}
+    .album .cover{position:static;max-width:22rem}
+    .tracks{columns:1}
+    .strip{grid-auto-columns:80%}
+  }
+  @media (prefers-reduced-motion:no-preference){
+    .piece:hover .art img{transform:scale(1.03)}
+  }
+  @media (prefers-reduced-motion:reduce){
+    html{scroll-behavior:auto}
+    .stage video{display:none}
+    .stage.ready .poster{visibility:visible}
+  }
+</style>
+</head>
+<body>
+<a class="brand" href="https://ogversion.com/">OG VERSION</a>
+
+<main>
+  <section class="film" id="film" aria-label="NA2 kelionė">
+    <div class="stage" id="stage">
+      <img class="poster" id="poster" src="/merch/assets/na2-film-poster.jpg" alt="" fetchpriority="high">
+      <video id="film-video" muted playsinline preload="auto" aria-hidden="true"></video>
+      <div class="progress" aria-hidden="true"><span id="bar"></span></div>
+      <nav class="route" aria-label="Skyriai">
+        <button type="button" data-go="0" aria-current="step">NA2</button>
+        <button type="button" data-go="1">Kasa</button>
+        <button type="button" data-go="2">Virsmas</button>
+        <button type="button" data-go="3">Namas</button>
+      </nav>
+    </div>
+    <div class="story">
+      <article class="chapter" data-align="left" id="prozektorius">
+        <div class="pin"><div class="copy">
+          <p class="kicker">OG Version · Nieko asmeniško 2</p>
+          <h1 class="title">Albumas jau čia. Dabar jį galima apsivilkti.</h1>
+          <p class="body">26 trekai iš Šilainių kiemo. Prožektorius ieško, kam jie skirti.</p>
+          <ul class="tags"><li>26 trekai</li><li>Jau YouTube</li></ul>
+        </div></div>
+      </article>
+      <article class="chapter" data-align="right" id="kasa">
+        <div class="pin"><div class="copy">
+          <h2 class="title">Pinigų raidės ant nugaros</h2>
+          <p class="body">Coverio NA2 iš euro kupiūrų ant nugaros. Juodas ant juodo, be jokio rėmelio, priekyje tik mažas ženklas.</p>
+          <ul class="tags"><li>Marškinėliai</li><li>Juodi, 240 g</li><li>DTF spauda</li></ul>
+        </div></div>
+      </article>
+      <article class="chapter" data-align="left" id="virsmas">
+        <div class="pin"><div class="copy">
+          <p class="kicker">Džemperis</p>
+          <h2 class="title">Kai pinigai virsta namu</h2>
+          <p class="body">Raidės užgęsta ir tampa daugiaaukščiu. Ant džemperio nugaros namas, langai pūstu dažu, kad šviestų ir liestųsi.</p>
+          <ul class="tags"><li>Hoodie, 350 g</li><li>Šilkografija, puff langai</li></ul>
+        </div></div>
+      </article>
+      <article class="chapter" data-align="right" id="namas">
+        <div class="pin"><div class="copy">
+          <h2 class="title">Langai užsidega Šilainiuose</h2>
+          <p class="body">Keturi daiktai iš vieno kiemo: marškinėliai, džemperis, kepurė ir 26 trekų nugara. Nuotraukos fotografuojamos dabar.</p>
+          <ul class="tags"><li>Drop 2026 ruduo</li></ul>
+        </div></div>
+      </article>
+    </div>
+  </section>
+
+  <section class="block" id="kapsule">
+    <h2>Kapsulė</h2>
+    <p class="lead">Keturi daiktai, viena taisyklė: priekyje tylu, nugara daro visą darbą. Nuotraukos su tikrais daiktais fotografuojamos dabar, kol kas rodomi spaudos vaizdai.</p>
+    <ul class="pieces">
+      <li class="piece">
+        <div class="art"><img src="/merch/assets/kasa-tee.jpg" alt="Juodi marškinėliai su pinigų NA2 raidėmis ant nugaros" loading="lazy"></div>
+        <div class="meta"><p class="kind">Marškinėliai</p><h3 class="name">Kasa</h3><p class="spec">Juodi, 240 g. Nugaroje pinigų NA2 30 × 30 cm, priekyje mažas ženklas.</p></div>
+      </li>
+      <li class="piece">
+        <div class="art"><img src="/merch/assets/daugiaaukstis-hoodie.jpg" alt="Juodas džemperis su daugiaaukščiu ant nugaros, kiemas naktį" loading="lazy"></div>
+        <div class="meta"><p class="kind">Džemperis</p><h3 class="name">Daugiaaukštis</h3><p class="spec">Juodas, 350 g. Namas per visą nugarą, langai pūstu dažu.</p></div>
+      </li>
+      <li class="piece">
+        <div class="art"><div class="tracks-tile" aria-hidden="true"><b>NA2</b><ol>
+          <li><span>1</span>Sanfranc</li><li><span>2</span>Atlantic Sitis</li><li><span>3</span>Kalabasas</li><li><span>4</span>Viskas arba nieko</li><li><span>5</span>Madrio Atletic ft. Hoptie</li><li><span>6</span>Liko truputį</li><li><span>7</span>Paskutinis teismas</li><li><span>8</span>Muzika išgirsk</li><li><span>9</span>Angarai</li><li><span>10</span>Vėl albumus</li><li><span>11</span>Pisau ir skambinau</li><li><span>12</span>Sha Kaune</li><li><span>13</span>Tackoi ahuenoi</li><li><span>14</span>Mūsų era</li><li><span>15</span>Skaičiai numeriai</li><li><span>16</span>Tema belenkokia</li><li><span>17</span>Lekiam iš savo kvartalo</li><li><span>18</span>Forgiato</li><li><span>19</span>Persona</li><li><span>20</span>Tavo viltis</li><li><span>21</span>Šešėliai</li><li><span>22</span>Karštesnis už mixteipą</li><li><span>23</span>Kanondeilas</li><li><span>24</span>ADHD dealas 2</li><li><span>25</span>Eina daro</li><li><span>26</span>Tiesiai iš gatvės</li>
+        </ol></div></div>
+        <div class="meta"><p class="kind">Marškinėliai</p><h3 class="name">26 trekai</h3><p class="spec">Juodi arba išplauti pilki. Visas albumas nugaroje, vienu dažu.</p></div>
+      </li>
+      <li class="piece">
+        <div class="art"><div class="cap-tile" aria-hidden="true"><span>NA2</span><small>OG VERSION</small></div></div>
+        <div class="meta"><p class="kind">Kepurė</p><h3 class="name">NA2</h3><p class="spec">Juoda dad cap, NA2 3D siuvinėjimas, gale OG VERSION.</p></div>
+      </li>
+    </ul>
+    <div class="cta-row">
+      <a class="cta-drop" href="mailto:versionog@gmail.com?subject=NA2%20merch%20dropas&body=Noriu%20suzinoti%2C%20kai%20NA2%20merch%20bus%20parduodamas.%20Dydis%3A%20">Pranešti apie dropą</a>
+      <p class="note">Kainos ir dydžiai paskelbiami kartu su dropu.</p>
+    </div>
+  </section>
+
+  <section class="block album" id="albumas">
+    <div class="cover"><img src="/merch/assets/cover-money-800.jpg" alt="NA2 albumo coveris: raidės iš euro kupiūrų ant juodo fono" loading="lazy"></div>
+    <div>
+      <h2>Nieko asmeniško 2</h2>
+      <p class="lead">26 trekai, 67 minutės. Visas albumas viename YouTube įraše.</p>
+      <ol class="tracks">
+        <li><span class="n">1</span><span>Sanfranc</span></li><li><span class="n">2</span><span>Atlantic Sitis</span></li><li><span class="n">3</span><span>Kalabasas</span></li><li><span class="n">4</span><span>Viskas arba nieko</span></li><li><span class="n">5</span><span>Madrio Atletic ft. Hoptie</span></li><li><span class="n">6</span><span>Liko truputį</span></li><li><span class="n">7</span><span>Paskutinis teismas</span></li><li><span class="n">8</span><span>Muzika išgirsk</span></li><li><span class="n">9</span><span>Angarai</span></li><li><span class="n">10</span><span>Vėl albumus</span></li><li><span class="n">11</span><span>Pisau ir skambinau</span></li><li><span class="n">12</span><span>Sha Kaune</span></li><li><span class="n">13</span><span>Tackoi ahuenoi</span></li><li><span class="n">14</span><span>Mūsų era</span></li><li><span class="n">15</span><span>Skaičiai numeriai</span></li><li><span class="n">16</span><span>Tema belenkokia</span></li><li><span class="n">17</span><span>Lekiam iš savo kvartalo</span></li><li><span class="n">18</span><span>Forgiato</span></li><li><span class="n">19</span><span>Persona</span></li><li><span class="n">20</span><span>Tavo viltis</span></li><li><span class="n">21</span><span>Šešėliai</span></li><li><span class="n">22</span><span>Karštesnis už mixteipą</span></li><li><span class="n">23</span><span>Kanondeilas</span></li><li><span class="n">24</span><span>ADHD dealas 2</span></li><li><span class="n">25</span><span>Eina daro</span></li><li><span class="n">26</span><span>Tiesiai iš gatvės</span></li>
+      </ol>
+      <a class="cta-listen" id="yt" href="https://www.youtube.com/results?search_query=OG+Version+NA2+Nieko+asmeni%C5%A1ko+2" target="_blank" rel="noreferrer">Klausyti YouTube</a>
+    </div>
+  </section>
+
+  <section class="block" aria-labelledby="kiemas-h">
+    <h2 id="kiemas-h">Kiemas</h2>
+    <div class="strip">
+      <figure><img src="/merch/assets/kiemas-prozektorius.jpg" alt="Sraigtasparnio prožektorius ant devynaukščio Šilainiuose naktį" loading="lazy"><figcaption>Prožektorius</figcaption></figure>
+      <figure><img src="/merch/assets/namas-raides.jpg" alt="Panelinis namas su NA2 raidėmis ir šviečiančiais langais" loading="lazy"><figcaption>Daugiaaukštis</figcaption></figure>
+      <figure><img src="/merch/assets/kiemas-dega.jpg" alt="Deganti mašina panelinių namų kieme naktį" loading="lazy"><figcaption>Kiemas</figcaption></figure>
+      <figure><img src="/merch/assets/kiemas-juosta.jpg" alt="Geltona juosta NEPERŽENGTI tarp dviejų laiptinių" loading="lazy"><figcaption>Įvykio vieta</figcaption></figure>
+      <figure><img src="/merch/assets/na2-spotlight.jpg" alt="Prožektorius ant NA2 raidžių, kadras iš animuoto coverio" loading="lazy"><figcaption>Coveris</figcaption></figure>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <p>OG Version · Kaunas, Šilainiai</p>
+  <nav aria-label="OG Version nuorodos">
+    <a href="https://ogversion.com/">ogversion.com</a>
+    <a href="https://ogversion.com/47">47 Studio</a>
+    <a href="https://ogversion.com/radio">Radio</a>
+  </nav>
+</footer>
+
+<script>
+(function(){
+  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var mobile = window.matchMedia('(max-width: 860px), (hover: none) and (pointer: coarse)').matches;
+  var film = document.getElementById('film');
+  var stage = document.getElementById('stage');
+  var video = document.getElementById('film-video');
+  var poster = document.getElementById('poster');
+  var bar = document.getElementById('bar');
+  var buttons = Array.prototype.slice.call(document.querySelectorAll('.route button'));
+  var chapters = ['prozektorius','kasa','virsmas','namas'].map(function(id){ return document.getElementById(id); });
+
+  if (mobile) poster.src = '/merch/assets/na2-film-mobile-poster.jpg';
+  buttons.forEach(function(b){
+    b.addEventListener('click', function(){
+      var el = chapters[+b.dataset.go];
+      if (el) window.scrollTo({ top: el.offsetTop + film.offsetTop - 1, behavior: reduce ? 'auto' : 'smooth' });
+    });
+  });
+
+  function progress(){
+    var top = film.offsetTop, h = film.offsetHeight - window.innerHeight;
+    var p = (window.scrollY - top) / h;
+    return p < 0 ? 0 : p > 1 ? 1 : p;
+  }
+  function paintNav(p){
+    var idx = Math.min(3, Math.floor(p * 4));
+    buttons.forEach(function(b, i){ if (i === idx) b.setAttribute('aria-current','step'); else b.removeAttribute('aria-current'); });
+    bar.style.transform = 'scaleX(' + p + ')';
+  }
+
+  if (reduce) { paintNav(0); window.addEventListener('scroll', function(){ paintNav(progress()); }, { passive: true }); return; }
+
+  video.src = mobile ? '/merch/assets/na2-film-mobile.mp4' : '/merch/assets/na2-film.mp4';
+  var duration = 0, target = 0, seeking = false, primed = false, raf = 0;
+
+  function seek(){
+    raf = 0;
+    if (!duration || seeking) return;
+    var t = target * duration;
+    if (t > duration - 0.05) t = duration - 0.05;
+    if (Math.abs(video.currentTime - t) < 0.02) return;
+    seeking = true;
+    video.currentTime = t;
+  }
+  video.addEventListener('seeked', function(){
+    seeking = false;
+    if (!stage.classList.contains('ready')) stage.classList.add('ready');
+    if (Math.abs(video.currentTime - target * duration) > 0.04 && !raf) raf = requestAnimationFrame(seek);
+  });
+  video.addEventListener('loadedmetadata', function(){
+    duration = video.duration || 35;
+    target = progress();
+    seek();
+  });
+  video.addEventListener('error', function(){ stage.classList.remove('ready'); });
+
+  // iOS needs one gesture before currentTime seeks paint frames.
+  function prime(){
+    if (primed) return; primed = true;
+    var p = video.play();
+    if (p && p.then) p.then(function(){ video.pause(); seek(); }).catch(function(){});
+    else { video.pause(); }
+  }
+  ['touchstart','pointerdown','keydown','wheel'].forEach(function(ev){ window.addEventListener(ev, prime, { passive: true, once: true }); });
+
+  function onScroll(){
+    var p = progress();
+    target = p;
+    paintNav(p);
+    if (!raf) raf = requestAnimationFrame(seek);
+  }
+  window.addEventListener('scroll', onScroll, { passive: true });
+  window.addEventListener('resize', onScroll);
+  video.load();
+  onScroll();
+})();
+</script>
+</body>
+</html>
