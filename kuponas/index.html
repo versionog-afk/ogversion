@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="lt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dovanų kuponas – čekis</title>
+<meta name="robots" content="noindex">
+<script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js"></script>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #0a0a0a; color: #f0f0f0; font-family: 'Courier New', monospace; min-height: 100vh; }
+  .header { border-bottom: 1px solid #222; padding: 16px 24px; }
+  .logo-sub { font-size: 11px; color: #666; letter-spacing: 4px; text-transform: uppercase; }
+  .logo { font-size: 20px; font-weight: 700; color: #e8ff47; letter-spacing: -1px; }
+  .wrap { max-width: 980px; margin: 0 auto; padding: 32px 24px; display: grid; gap: 32px; grid-template-columns: 1fr; }
+  @media (min-width: 820px) { .wrap { grid-template-columns: 1fr 340px; align-items: start; } }
+  label { display: block; font-size: 11px; color: #666; letter-spacing: 3px; text-transform: uppercase; margin-bottom: 8px; }
+  input, select, textarea { width: 100%; background: #111; border: 1px solid #222; color: #f0f0f0; padding: 14px 16px; font-family: inherit; font-size: 14px; outline: none; margin-bottom: 16px; border-radius: 0; }
+  textarea { resize: vertical; min-height: 64px; }
+  input:focus, select:focus, textarea:focus { border-color: #e8ff47; }
+  .row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .code-row { display: flex; gap: 8px; }
+  .code-row input { flex: 1; }
+  .btn { width: 100%; padding: 14px 24px; background: #e8ff47; border: 1px solid #e8ff47; color: #000; cursor: pointer; font-family: inherit; font-size: 13px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; }
+  .btn-outline { background: transparent; border-color: #333; color: #999; width: auto; padding: 0 16px; margin-bottom: 16px; }
+  .hint { font-size: 11px; color: #555; margin-top: 12px; line-height: 1.5; }
+
+  /* ---- The receipt ---- */
+  .receipt { background: #fff; color: #000; width: 100%; max-width: 340px; padding: 22px 18px 26px; font-family: 'Courier New', monospace; font-size: 12px; line-height: 1.45; position: relative; }
+  .receipt::after { content: ""; position: absolute; left: 0; right: 0; bottom: -8px; height: 8px; background: linear-gradient(-45deg, transparent 6px, #fff 0) 0 0/12px 8px repeat-x, linear-gradient(45deg, transparent 6px, #fff 0) 0 0/12px 8px repeat-x; }
+  .c { text-align: center; }
+  .r-brand { font-size: 20px; font-weight: 700; letter-spacing: 1px; }
+  .r-sub { font-size: 11px; }
+  .r-title { margin: 14px 0 4px; font-size: 15px; font-weight: 700; letter-spacing: 3px; border-top: 2px solid #000; border-bottom: 2px solid #000; padding: 6px 0; }
+  .dash { border-top: 1px dashed #000; margin: 10px 0; }
+  .line { display: flex; justify-content: space-between; gap: 8px; }
+  .line span:last-child { text-align: right; }
+  .r-amount { font-size: 30px; font-weight: 700; margin: 6px 0 2px; }
+  .r-code { font-size: 17px; font-weight: 700; letter-spacing: 2px; margin-top: 4px; }
+  .r-qr { width: 132px; height: 132px; margin: 10px auto 4px; display: block; image-rendering: pixelated; }
+  .r-msg { font-style: italic; margin-top: 4px; white-space: pre-wrap; word-break: break-word; }
+  .r-small { font-size: 10px; }
+  .r-total { font-weight: 700; font-size: 14px; }
+
+  @media print {
+    @page { size: 80mm auto; margin: 0; }
+    body { background: #fff; }
+    .header, .form { display: none; }
+    .wrap { display: block; padding: 0; max-width: none; }
+    .receipt { max-width: none; width: 80mm; padding: 4mm 4mm 6mm; }
+    .receipt::after { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="logo-sub">ogversion.com</div>
+  <div class="logo">DOVANŲ KUPONAS</div>
+</div>
+
+<div class="wrap">
+  <form class="form" id="f" onsubmit="event.preventDefault(); window.print();">
+    <label for="issuer">Kas išduoda</label>
+    <select id="issuer">
+      <option value="47">47 STUDIO — tatuiruočių studija, Kaunas</option>
+      <option value="og">OG VERSION</option>
+    </select>
+
+    <div class="row">
+      <div>
+        <label for="amount">Suma, €</label>
+        <input id="amount" type="number" min="1" step="1" value="100" inputmode="numeric">
+      </div>
+      <div>
+        <label for="pay">Apmokėta</label>
+        <select id="pay">
+          <option>Kortele</option>
+          <option>Grynais</option>
+          <option>Pavedimu</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="row">
+      <div>
+        <label for="to">Kam</label>
+        <input id="to" placeholder="Gavėjo vardas">
+      </div>
+      <div>
+        <label for="from">Nuo ko</label>
+        <input id="from" placeholder="Dovanotojas">
+      </div>
+    </div>
+
+    <label for="msg">Palinkėjimas</label>
+    <textarea id="msg" placeholder="Su gimtadieniu!"></textarea>
+
+    <div class="row">
+      <div>
+        <label for="valid">Galioja iki</label>
+        <input id="valid" type="date">
+      </div>
+      <div>
+        <label for="code">Kodas</label>
+        <div class="code-row">
+          <input id="code">
+          <button type="button" class="btn btn-outline" id="regen" title="Naujas kodas">↻</button>
+        </div>
+      </div>
+    </div>
+
+    <button class="btn" type="submit">Spausdinti / PDF</button>
+    <p class="hint">Čekis pritaikytas 80 mm kasos spausdintuvui. Norint išsaugoti PDF, spausdinimo lange pasirink „Išsaugoti kaip PDF“. Tai ne fiskalinis čekis: pinigų priėmimą registruok kasos aparatu kaip įprastai.</p>
+  </form>
+
+  <div class="receipt" id="receipt">
+    <div class="c">
+      <div class="r-brand" id="rBrand"></div>
+      <div class="r-sub" id="rSub"></div>
+    </div>
+    <div class="c r-title">DOVANŲ KUPONAS</div>
+    <div class="line r-small"><span id="rDate"></span><span id="rNo"></span></div>
+    <div class="dash"></div>
+    <div class="c">
+      <div class="r-amount" id="rAmount"></div>
+      <div class="r-small">vertės dovanų kuponas</div>
+    </div>
+    <div class="dash"></div>
+    <div class="line" id="rToLine"><span>Kam:</span><span id="rTo"></span></div>
+    <div class="line" id="rFromLine"><span>Nuo:</span><span id="rFrom"></span></div>
+    <div class="c r-msg" id="rMsg"></div>
+    <div class="dash"></div>
+    <div class="line"><span>Dovanų kuponas</span><span>1 x <span id="rPrice"></span></span></div>
+    <div class="line r-total"><span>VISO</span><span id="rTotal"></span></div>
+    <div class="line"><span>Apmokėta</span><span id="rPay"></span></div>
+    <div class="dash"></div>
+    <img class="r-qr" id="rQr" alt="">
+    <div class="c r-code" id="rCode"></div>
+    <div class="c r-small" style="margin-top:8px">Galioja iki <b id="rValid"></b></div>
+    <div class="dash"></div>
+    <div class="c r-small">Kuponas vienkartinis, nekeičiamas į pinigus.<br>Pateik šį čekį arba kodą apsilankymo metu.<br>Ne fiskalinis dokumentas.</div>
+    <div class="c r-small" style="margin-top:8px" id="rWeb"></div>
+  </div>
+</div>
+
+<script>
+  const ISSUERS = {
+    '47': { brand: '47 STUDIO', sub: 'Tatuiruočių studija · Kaunas', web: 'studio47.lt', prefix: '47' },
+    'og': { brand: 'OG VERSION', sub: 'Original streetwear', web: 'ogversion.com', prefix: 'OG' }
+  };
+  const $ = id => document.getElementById(id);
+  const ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // no 0/O, 1/I
+
+  function randomBlock(n) {
+    const bytes = crypto.getRandomValues(new Uint8Array(n));
+    return Array.from(bytes, b => ALPHABET[b % ALPHABET.length]).join('');
+  }
+  function newCode() {
+    $('code').value = ISSUERS[$('issuer').value].prefix + '-' + randomBlock(4) + '-' + randomBlock(4);
+  }
+  function euro(v) {
+    return (Number(v) || 0).toLocaleString('lt-LT', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' €';
+  }
+  function fmtDate(d) {
+    return d.toLocaleDateString('lt-LT', { year: 'numeric', month: '2-digit', day: '2-digit' });
+  }
+
+  // Receipt number: per-device running counter, falls back to a timestamp.
+  let receiptNo;
+  try {
+    receiptNo = Number(localStorage.getItem('kuponas-no') || 0) + 1;
+  } catch (e) {
+    receiptNo = Date.now() % 100000;
+  }
+  window.addEventListener('afterprint', () => {
+    try { localStorage.setItem('kuponas-no', receiptNo); } catch (e) {}
+    receiptNo++;
+    newCode();
+    render();
+  });
+
+  function render() {
+    const iss = ISSUERS[$('issuer').value];
+    const now = new Date();
+    $('rBrand').textContent = iss.brand;
+    $('rSub').textContent = iss.sub;
+    $('rWeb').textContent = iss.web;
+    $('rDate').textContent = fmtDate(now) + ' ' + now.toLocaleTimeString('lt-LT', { hour: '2-digit', minute: '2-digit' });
+    $('rNo').textContent = 'Nr. ' + String(receiptNo).padStart(5, '0');
+    $('rAmount').textContent = euro($('amount').value);
+    $('rPrice').textContent = euro($('amount').value);
+    $('rTotal').textContent = euro($('amount').value);
+    $('rPay').textContent = $('pay').value;
+    $('rTo').textContent = $('to').value;
+    $('rFrom').textContent = $('from').value;
+    $('rToLine').style.display = $('to').value ? '' : 'none';
+    $('rFromLine').style.display = $('from').value ? '' : 'none';
+    $('rMsg').textContent = $('msg').value ? '„' + $('msg').value + '“' : '';
+    const v = $('valid').value ? new Date($('valid').value) : null;
+    $('rValid').textContent = v ? fmtDate(v) : '—';
+    const code = $('code').value.trim();
+    $('rCode').textContent = code;
+    $('rQr').style.visibility = code ? '' : 'hidden';
+    if (code) {
+      const qr = qrcode(0, 'M');
+      qr.addData(code);
+      qr.make();
+      $('rQr').src = qr.createDataURL(8, 0);
+    }
+  }
+
+  // Defaults: valid for 12 months, fresh code.
+  const until = new Date();
+  until.setFullYear(until.getFullYear() + 1);
+  $('valid').value = until.toISOString().slice(0, 10);
+  newCode();
+
+  $('regen').addEventListener('click', () => { newCode(); render(); });
+  $('issuer').addEventListener('change', () => { newCode(); render(); });
+  $('f').addEventListener('input', render);
+  render();
+</script>
+</body>
+</html>
