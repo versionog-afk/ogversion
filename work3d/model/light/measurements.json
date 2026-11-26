@@ -1,0 +1,67 @@
+{
+ "name": "light",
+ "title": "NA2 oversized tee, lighter type: 220 g/m2 cotton single jersey, 1x1 rib collar",
+ "fabric": "jersey_220",
+ "units": "metres, degrees. Every garment dimension of the build comes from this file; replace the values with tape measurements when they arrive.",
+ "status": "ESTIMATES from the two mock-up pictures (cut, proportions) and the worn photos / video (scale, print positions). See README.md, section Measurements.",
+ "body": {
+  "length_hps_to_hem": 0.700,
+  "chest_width_flat": 0.570,
+  "hem_width_flat": 0.570,
+  "shoulder_to_shoulder": 0.490,
+  "shoulder_slope_deg": 12.0,
+  "armhole_straight": 0.245,
+  "armhole_curve": 0.30,
+  "hem_allowance": 0.020
+ },
+ "neck": {
+  "width_seam_to_seam": 0.180,
+  "front_drop": 0.090,
+  "back_drop": 0.022,
+  "rib_width": 0.026,
+  "rib_length_ratio": 0.86,
+  "rib_thickness": 0.0032,
+  "neck_tape_width": 0.010
+ },
+ "sleeve": {
+  "length_from_shoulder_seam": 0.250,
+  "opening_flat": 0.210,
+  "angle_flat_deg": 20.0,
+  "hem_allowance": 0.020
+ },
+ "stitching": {
+  "hem_stitch_from_edge": 0.020,
+  "hem_stitch_gap": 0.004,
+  "comment": "double needle stitching on the bottom hem and the sleeve hems: two parallel lines, the outer one hem_stitch_from_edge from the edge"
+ },
+ "print_front": {
+  "canvas_width": 0.105,
+  "canvas_height": 0.070,
+  "center_x": 0.090,
+  "center_below_front_collar_seam": 0.098,
+  "offset": 0.0012,
+  "grid": [30, 20],
+  "comment": "3:2 canvas of art/front.png on the wearer's left chest (+x). Real width still to come from the owner."
+ },
+ "print_back": {
+  "canvas_width": 0.297,
+  "canvas_height": 0.396,
+  "center_x": 0.0,
+  "art_top_below_back_collar_seam": 0.095,
+  "art_top_v": 0.0151,
+  "offset": 0.0012,
+  "grid": [60, 80],
+  "comment": "3:4 canvas of art/back.png. art_top_v is the artwork's top inside the canvas (art/meta.json: back.artBox.v0); the canvas top therefore sits art_top_v * canvas_height higher than the artwork top."
+ },
+ "label": {
+  "width": 0.020,
+  "height": 0.014,
+  "offset": 0.001,
+  "comment": "woven neck label sewn by its top edge under the back collar seam, inside, centred"
+ },
+ "body_cut": {
+  "hip_bone_y": 1.00,
+  "margin": 0.03,
+  "comment": "figure faces are deleted only where they are hidden by this shirt AND lie above hip_bone_y (a shirt that only reaches the hip bone still hides them). margin = skin kept beyond what any camera of the visibility test can see."
+ }
+}

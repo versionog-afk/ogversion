@@ -1,0 +1,17 @@
+{
+ "comment": "Pipeline settings that are not garment measurements. Lengths in metres.",
+ "mesh_edge": 0.0095,
+ "sim": {
+  "frames_inflate": 40, "frames_arms": 90, "frames_settle": 120, "frames_freeze": 25,
+  "quality": 10, "collision_quality": 4,
+  "mass": 0.3,
+  "yscale0": 0.07, "layer_gap": 0.020, "layer_gap_min": 0.0016, "layer_ramp": 0.035, "start_clearance": 0.007,
+  "arm_keys": 13,
+  "collider_outer": 0.0025, "collider_friction": 10.0,
+  "air_damping_end": 6.0,
+  "self_collision": true
+ },
+ "post": {"smooth_iters": 6, "smooth_lambda": 0.5, "smooth_mu": -0.53, "seam_relax": 3},
+ "texture": {"size": 2048, "ao_size": 1024, "ao_rays": 96, "normal_quality": 92, "ao_quality": 90},
+ "visibility": {"elevations": [-25, -10, 5, 20, 35, 55], "azimuth_steps": 24, "distance": 2.6, "extra_points": 1}
+}

@@ -1,0 +1,801 @@
+{
+ "units": "metres",
+ "spec": "light",
+ "source": "GarmentCode / pygarment (pattern classes and serializer)",
+ "frames": "front/back: flat-lay (x to the wearer's left, y up from the hem). sleeves: x = q across (q > 0 front half), y = -p along the fold line from the shoulder point. collar: straight strip, cut length x 2 * rib width, folded double along its length; edge \"seam_fold\" is folded onto edge \"seam\" and caught in the same seam.",
+ "flat_lay": {
+  "S": [
+   0.245,
+   0.6670537329411466
+  ],
+  "ds": [
+   0.9396926207859084,
+   -0.3420201433256687
+  ],
+  "dh": [
+   -0.3420201433256687,
+   -0.9396926207859084
+  ],
+  "note": "a sleeve point (p, q) lies at S + p * ds + |q| * dh (x mirrored for the wearer's right sleeve) when the shirt lies flat"
+ },
+ "collar": {
+  "rib_width": 0.026,
+  "cut_length": 0.40881,
+  "neckline_length": 0.47536,
+  "note": "the band is shorter than the neckline (rib_length_ratio) and is stretched onto it"
+ },
+ "derived": {
+  "shoulder_seam": 0.15846,
+  "armhole_curve_length": 0.25205,
+  "sleeve_width_at_armhole_flat": 0.21345,
+  "sleeve_underarm_seam": 0.12979,
+  "side_seam": 0.42534,
+  "neckline_seam_length": 0.47536,
+  "collar_band_cut_length": 0.40881,
+  "hps_to_sleeve_hem": 0.40846,
+  "centre_back_length": 0.678,
+  "centre_front_length": 0.61,
+  "chest_circumference": 1.14,
+  "sleeve_opening_circumference": 0.42
+ },
+ "panels": {
+  "front": {
+   "role": "front",
+   "vertices": [
+    [
+     -0.285,
+     0.0
+    ],
+    [
+     0.285,
+     0.0
+    ],
+    [
+     0.285,
+     0.425341
+    ],
+    [
+     0.245,
+     0.667054
+    ],
+    [
+     0.09,
+     0.7
+    ],
+    [
+     0.0,
+     0.61
+    ],
+    [
+     -0.09,
+     0.7
+    ],
+    [
+     -0.245,
+     0.667054
+    ],
+    [
+     -0.285,
+     0.425341
+    ]
+   ],
+   "edges": [
+    {
+     "v": [
+      0,
+      1
+     ],
+     "label": "hem"
+    },
+    {
+     "v": [
+      1,
+      2
+     ],
+     "label": "side_L"
+    },
+    {
+     "v": [
+      2,
+      3
+     ],
+     "label": "armhole_L",
+     "bezier": [
+      [
+       0.248799,
+       0.471676
+      ],
+      [
+       0.219862,
+       0.597986
+      ]
+     ]
+    },
+    {
+     "v": [
+      3,
+      4
+     ],
+     "label": "shoulder_L"
+    },
+    {
+     "v": [
+      4,
+      5
+     ],
+     "label": "neck_L",
+     "bezier": [
+      [
+       0.09,
+       0.650294
+      ],
+      [
+       0.049706,
+       0.61
+      ]
+     ]
+    },
+    {
+     "v": [
+      5,
+      6
+     ],
+     "label": "neck_R",
+     "bezier": [
+      [
+       -0.049706,
+       0.61
+      ],
+      [
+       -0.09,
+       0.650294
+      ]
+     ]
+    },
+    {
+     "v": [
+      6,
+      7
+     ],
+     "label": "shoulder_R"
+    },
+    {
+     "v": [
+      7,
+      8
+     ],
+     "label": "armhole_R",
+     "bezier": [
+      [
+       -0.219862,
+       0.597986
+      ],
+      [
+       -0.248799,
+       0.471676
+      ]
+     ]
+    },
+    {
+     "v": [
+      8,
+      0
+     ],
+     "label": "side_R"
+    }
+   ]
+  },
+  "back": {
+   "role": "back",
+   "vertices": [
+    [
+     -0.285,
+     0.0
+    ],
+    [
+     -0.285,
+     0.425341
+    ],
+    [
+     -0.245,
+     0.667054
+    ],
+    [
+     -0.09,
+     0.7
+    ],
+    [
+     0.0,
+     0.678
+    ],
+    [
+     0.09,
+     0.7
+    ],
+    [
+     0.245,
+     0.667054
+    ],
+    [
+     0.285,
+     0.425341
+    ],
+    [
+     0.285,
+     0.0
+    ]
+   ],
+   "edges": [
+    {
+     "v": [
+      0,
+      1
+     ],
+     "label": "side_R"
+    },
+    {
+     "v": [
+      1,
+      2
+     ],
+     "label": "armhole_R",
+     "bezier": [
+      [
+       -0.248799,
+       0.471676
+      ],
+      [
+       -0.219862,
+       0.597986
+      ]
+     ]
+    },
+    {
+     "v": [
+      2,
+      3
+     ],
+     "label": "shoulder_R"
+    },
+    {
+     "v": [
+      3,
+      4
+     ],
+     "label": "neck_R",
+     "bezier": [
+      [
+       -0.09,
+       0.68785
+      ],
+      [
+       -0.049706,
+       0.678
+      ]
+     ]
+    },
+    {
+     "v": [
+      4,
+      5
+     ],
+     "label": "neck_L",
+     "bezier": [
+      [
+       0.049706,
+       0.678
+      ],
+      [
+       0.09,
+       0.68785
+      ]
+     ]
+    },
+    {
+     "v": [
+      5,
+      6
+     ],
+     "label": "shoulder_L"
+    },
+    {
+     "v": [
+      6,
+      7
+     ],
+     "label": "armhole_L",
+     "bezier": [
+      [
+       0.219862,
+       0.597986
+      ],
+      [
+       0.248799,
+       0.471676
+      ]
+     ]
+    },
+    {
+     "v": [
+      7,
+      8
+     ],
+     "label": "side_L"
+    },
+    {
+     "v": [
+      8,
+      0
+     ],
+     "label": "hem"
+    }
+   ]
+  },
+  "sleeve_L": {
+   "role": "sleeve",
+   "vertices": [
+    [
+     0.0,
+     0.0
+    ],
+    [
+     -0.213455,
+     -0.120258
+    ],
+    [
+     -0.21,
+     -0.25
+    ],
+    [
+     0.21,
+     -0.25
+    ],
+    [
+     0.213455,
+     -0.120258
+    ]
+   ],
+   "edges": [
+    {
+     "v": [
+      0,
+      1
+     ],
+     "label": "cap_B",
+     "bezier": [
+      [
+       -0.0735,
+       -0.0
+      ],
+      [
+       -0.182296,
+       -0.070393
+      ]
+     ]
+    },
+    {
+     "v": [
+      1,
+      2
+     ],
+     "label": "under_B"
+    },
+    {
+     "v": [
+      2,
+      3
+     ],
+     "label": "hem"
+    },
+    {
+     "v": [
+      3,
+      4
+     ],
+     "label": "under_F"
+    },
+    {
+     "v": [
+      4,
+      0
+     ],
+     "label": "cap_F",
+     "bezier": [
+      [
+       0.182296,
+       -0.070393
+      ],
+      [
+       0.0735,
+       -0.0
+      ]
+     ]
+    }
+   ],
+   "side": "L"
+  },
+  "sleeve_R": {
+   "role": "sleeve",
+   "vertices": [
+    [
+     0.0,
+     0.0
+    ],
+    [
+     -0.213455,
+     -0.120258
+    ],
+    [
+     -0.21,
+     -0.25
+    ],
+    [
+     0.21,
+     -0.25
+    ],
+    [
+     0.213455,
+     -0.120258
+    ]
+   ],
+   "edges": [
+    {
+     "v": [
+      0,
+      1
+     ],
+     "label": "cap_B",
+     "bezier": [
+      [
+       -0.0735,
+       -0.0
+      ],
+      [
+       -0.182296,
+       -0.070393
+      ]
+     ]
+    },
+    {
+     "v": [
+      1,
+      2
+     ],
+     "label": "under_B"
+    },
+    {
+     "v": [
+      2,
+      3
+     ],
+     "label": "hem"
+    },
+    {
+     "v": [
+      3,
+      4
+     ],
+     "label": "under_F"
+    },
+    {
+     "v": [
+      4,
+      0
+     ],
+     "label": "cap_F",
+     "bezier": [
+      [
+       0.182296,
+       -0.070393
+      ],
+      [
+       0.0735,
+       -0.0
+      ]
+     ]
+    }
+   ],
+   "side": "R"
+  },
+  "collar": {
+   "role": "collar",
+   "vertices": [
+    [
+     0.0,
+     0.0
+    ],
+    [
+     0.082809,
+     0.0
+    ],
+    [
+     0.165618,
+     0.0
+    ],
+    [
+     0.287214,
+     0.0
+    ],
+    [
+     0.408811,
+     0.0
+    ],
+    [
+     0.408811,
+     0.052
+    ],
+    [
+     0.0,
+     0.052
+    ]
+   ],
+   "edges": [
+    {
+     "v": [
+      0,
+      1
+     ],
+     "label": "seam"
+    },
+    {
+     "v": [
+      1,
+      2
+     ],
+     "label": "seam"
+    },
+    {
+     "v": [
+      2,
+      3
+     ],
+     "label": "seam"
+    },
+    {
+     "v": [
+      3,
+      4
+     ],
+     "label": "seam"
+    },
+    {
+     "v": [
+      4,
+      5
+     ],
+     "label": "end_B"
+    },
+    {
+     "v": [
+      5,
+      6
+     ],
+     "label": "seam_fold"
+    },
+    {
+     "v": [
+      6,
+      0
+     ],
+     "label": "end_A"
+    }
+   ]
+  }
+ },
+ "seams": [
+  {
+   "name": "side_L",
+   "a": {
+    "panel": "front",
+    "edge": 1
+   },
+   "b": {
+    "panel": "back",
+    "edge": 7
+   },
+   "reversed": true,
+   "length_a": 0.42534,
+   "length_b": 0.42534
+  },
+  {
+   "name": "shoulder_L",
+   "a": {
+    "panel": "front",
+    "edge": 3
+   },
+   "b": {
+    "panel": "back",
+    "edge": 5
+   },
+   "reversed": true,
+   "length_a": 0.15846,
+   "length_b": 0.15846
+  },
+  {
+   "name": "armhole_front_L",
+   "a": {
+    "panel": "front",
+    "edge": 2
+   },
+   "b": {
+    "panel": "sleeve_L",
+    "edge": 4
+   },
+   "reversed": false,
+   "length_a": 0.25205,
+   "length_b": 0.25205
+  },
+  {
+   "name": "armhole_back_L",
+   "a": {
+    "panel": "back",
+    "edge": 6
+   },
+   "b": {
+    "panel": "sleeve_L",
+    "edge": 0
+   },
+   "reversed": false,
+   "length_a": 0.25205,
+   "length_b": 0.25205
+  },
+  {
+   "name": "underarm_L",
+   "a": {
+    "panel": "sleeve_L",
+    "edge": 3
+   },
+   "b": {
+    "panel": "sleeve_L",
+    "edge": 1
+   },
+   "reversed": true,
+   "length_a": 0.12979,
+   "length_b": 0.12979
+  },
+  {
+   "name": "side_R",
+   "a": {
+    "panel": "front",
+    "edge": 8
+   },
+   "b": {
+    "panel": "back",
+    "edge": 0
+   },
+   "reversed": true,
+   "length_a": 0.42534,
+   "length_b": 0.42534
+  },
+  {
+   "name": "shoulder_R",
+   "a": {
+    "panel": "front",
+    "edge": 6
+   },
+   "b": {
+    "panel": "back",
+    "edge": 2
+   },
+   "reversed": true,
+   "length_a": 0.15846,
+   "length_b": 0.15846
+  },
+  {
+   "name": "armhole_front_R",
+   "a": {
+    "panel": "front",
+    "edge": 7
+   },
+   "b": {
+    "panel": "sleeve_R",
+    "edge": 4
+   },
+   "reversed": true,
+   "length_a": 0.25205,
+   "length_b": 0.25205
+  },
+  {
+   "name": "armhole_back_R",
+   "a": {
+    "panel": "back",
+    "edge": 1
+   },
+   "b": {
+    "panel": "sleeve_R",
+    "edge": 0
+   },
+   "reversed": true,
+   "length_a": 0.25205,
+   "length_b": 0.25205
+  },
+  {
+   "name": "underarm_R",
+   "a": {
+    "panel": "sleeve_R",
+    "edge": 3
+   },
+   "b": {
+    "panel": "sleeve_R",
+    "edge": 1
+   },
+   "reversed": true,
+   "length_a": 0.12979,
+   "length_b": 0.12979
+  },
+  {
+   "name": "collar",
+   "a": {
+    "panel": "collar",
+    "edge": 0
+   },
+   "b": {
+    "panel": "back",
+    "edge": 4
+   },
+   "reversed": true,
+   "band_from": 0.0,
+   "length_a": 0.08281,
+   "length_b": 0.09629
+  },
+  {
+   "name": "collar",
+   "a": {
+    "panel": "collar",
+    "edge": 1
+   },
+   "b": {
+    "panel": "back",
+    "edge": 3
+   },
+   "reversed": true,
+   "band_from": 0.082809,
+   "length_a": 0.08281,
+   "length_b": 0.09629
+  },
+  {
+   "name": "collar",
+   "a": {
+    "panel": "collar",
+    "edge": 2
+   },
+   "b": {
+    "panel": "front",
+    "edge": 5
+   },
+   "reversed": true,
+   "band_from": 0.165618,
+   "length_a": 0.1216,
+   "length_b": 0.14139
+  },
+  {
+   "name": "collar",
+   "a": {
+    "panel": "collar",
+    "edge": 3
+   },
+   "b": {
+    "panel": "front",
+    "edge": 4
+   },
+   "reversed": true,
+   "band_from": 0.287214,
+   "length_a": 0.1216,
+   "length_b": 0.14139
+  },
+  {
+   "name": "collar_close",
+   "a": {
+    "panel": "collar",
+    "edge": 6
+   },
+   "b": {
+    "panel": "collar",
+    "edge": 4
+   },
+   "reversed": true,
+   "length_a": 0.052,
+   "length_b": 0.052
+  }
+ ]
+}

@@ -44,7 +44,7 @@ const anchors = p => p.evaluate(() => { const D = window.__m.dbg, o = {}; for (c
 // real scrolling to a position given in screens; waits until the applied scroll has caught up
 async function scrollToS(p, S) {
   await p.evaluate(S => window.scrollTo(0, Math.round(S * window.__m.dbg.stage.S)), S);
-  await p.waitForFunction(S => Math.abs(window.__m.s - Math.round(S * window.__m.dbg.stage.S) / window.__m.dbg.stage.S) < 0.002, S, { timeout: 30000 });
+  await p.waitForFunction(S => window.__m.dbg.tl.asleep || Math.abs(window.__m.s - Math.round(S * window.__m.dbg.stage.S) / window.__m.dbg.stage.S) < 0.002, S, { timeout: 30000 });
   await settle(p);
 }
 const state = p => p.evaluate(() => { const m = window.__m, D = m.dbg; return { fb: m.fallback, tier: m.tier, dpr: m.dpr, calls: m.calls, tris: m.tris, yaw: +m.yaw.toFixed(1), detent: m.detent, s: +m.s.toFixed(3), d: +m.d.toFixed(3), az: +m.az.toFixed(1), L: +m.L.toFixed(2), u: +m.u.toFixed(2), color: m.color, line: +D.tl.line.toFixed(2), rail: +D.tl.rail.toFixed(2), sw: D.tl.swOn, cls: document.documentElement.className, scrollW: document.documentElement.scrollWidth }; });

@@ -39,6 +39,7 @@ PORT=8361 node tests/shots-na2.js 390x664     # storyboard screenshots into test
 | `art/` | print textures the build reads (`front.png` 3:2, `back.png` 3:4, `meta.json`) and `make_textures.py`, which builds them from the owner's original artwork |
 | `ref/` | owner's originals; mostly local-only |
 | `research/` | notes on tools found on GitHub, with licences and hardware needs |
+| `handoff/briefs/` | the complete instructions of the three jobs that were running in the cloud, with the path mapping |
 | `intro/` | the cinematic intro: the owner's brief, the shot plan and prompts, the opening frame, the edit; `intro/ref/` holds the game frames and is local only |
 | `out/`, `ext/`, `fonts/` | local outputs and downloads, not in git |
 
@@ -55,11 +56,11 @@ Decisions the owner made after the first version of this file (the sources are `
 
 Done and in the repository: the page core (sign, figure, spin, camera walk, lights-out beat, static fallback), the build with budgets, both print textures, the figure (body, hair, trousers, shoes: `model/body/`, also as an MPFB2 recipe in `model/mpfb/`), the research notes, the merged spec.
 
-In flight in the cloud session when this was written. Their results arrive as commits on this branch, so pull before touching the same files:
+The cloud session was stopped by the owner on 2026-11-26 at about 13:10 UTC and writes nothing more to this branch: the work continues locally. Three jobs were interrupted; their partial results are in the repository and none of them is verified. The full instructions each was working from are in `handoff/briefs/`.
 
-1. The page without text (`merch/index.html`, `merch/v/src/`, `spec/SPEC.md`, `spec/CONTENT-RULES.md`, `tests/`): first stage running; then the rack of photos and the robustness features, a four-lens review and fixes.
-2. The lighter shirt on the figure: sewing pattern, Blender cloth drape, decals, bake. Not in the repository yet; `model/current.glb` still carries a crude shirt shell.
-3. The intro: shot plan and prompts (`intro/shots.json`, `intro/PROMPTS.md`), the opening frame from real geography with a code-rendered first shot (`intro/src/opening/`), the intro player (`merch/v/intro/`), the timed animatic edit (`intro/edit/`).
+1. The page without text (`merch/index.html`, `merch/v/src/`, `tests/`): the first stage was about forty minutes in. The visible controls module is being replaced (`merch/v/src/controls.js`), the plates are being removed and the timeline retimed. Start by building it and looking at it; expect loose ends. `spec/SPEC.md` and `spec/CONTENT-RULES.md` had not been updated to the owner's decision yet.
+2. The lighter shirt on the figure: pattern generated, cloth mesh built, the drape was being tested (`model/light/README.md`). `model/current.glb` still carries a crude shirt shell.
+3. The intro: only the data preparation for the opening frame exists (`intro/src/opening/`, sources in `intro/SOURCES.md`). The shot plan with prompts, the opening frame itself, the first-shot animatic, the intro player and the timed edit were not reached.
 
 Not started:
 

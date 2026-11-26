@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xlink="http://www.w3.org/1999/xlink" baseProfile="full" height="86.00000000000003cm" version="1.1" viewBox="-118.3454777772978 -72.00000000000003 303.6909555545956 86.00000000000003" width="303.6909555545956cm">
+  <defs/>
+  <path d="M -25.0,12.0 L -16.719106901349683,12.0 L -8.438213802699366,12.0 L 3.721423349351042,12.0 L 15.88106050140145,12.0 L 15.88106050140145,6.8 L -25.0,6.8 L -25.0,12.0" fill="rgb(227,175,186)" stroke="rgb(51,51,51)" stroke-width="0.2"/>
+  <path d="M -95.0,-55.0 C -102.35,-55.0 -113.22955250360653,-47.96069316836905 -116.34547777729777,-42.97417036296927 L -116.0,-30.0 L -74.0,-30.0 L -73.65452222270221,-42.97417036296927 C -76.77044749639347,-47.96069316836905 -87.64999999999999,-55.0 -95.0,-55.0" fill="rgb(227,175,186)" stroke="rgb(51,51,51)" stroke-width="0.2"/>
+  <path d="M 95.0,-55.0 C 87.65,-55.0 76.77044749639347,-47.96069316836905 73.65452222270223,-42.97417036296927 L 74.0,-30.0 L 116.0,-30.0 L 116.34547777729779,-42.97417036296927 C 113.22955250360653,-47.96069316836905 102.35000000000001,-55.0 95.0,-55.0" fill="rgb(227,175,186)" stroke="rgb(51,51,51)" stroke-width="0.2"/>
+  <path d="M -67.0,0.0 L -10.0,0.0 L -10.0,-42.53410936357101 C -13.62008947491487,-47.16761259477854 -16.513848053443667,-59.79863253133823 -14.0,-66.70537329411465 L -29.5,-70.0 C -29.5,-65.02943725179999 -33.529437251800005,-61.0 -38.5,-61.0 C -43.47056274820001,-61.0 -47.5,-65.02943725179999 -47.5,-70.0 L -63.0,-66.70537329411465 C -60.48615194655633,-59.79863253133823 -63.37991052508513,-47.16761259477853 -67.0,-42.53410936357101 L -67.0,0.0" fill="rgb(227,175,186)" stroke="rgb(51,51,51)" stroke-width="0.2"/>
+  <path d="M 126.34547777729779,0.0 L 126.34547777729779,-42.53410936357101 C 129.96556725221268,-47.16761259477853 132.85932583074145,-59.79863253133823 130.3454777772978,-66.70537329411465 L 145.8454777772978,-70.0 C 145.8454777772978,-68.78497355044 149.8749150290978,-67.8 154.8454777772978,-67.8 C 159.81604052549778,-67.8 163.8454777772978,-68.78497355044 163.8454777772978,-70.0 L 179.3454777772978,-66.70537329411465 C 176.83162972385412,-59.79863253133823 179.72538830238292,-47.16761259477854 183.3454777772978,-42.53410936357101 L 183.3454777772978,0.0 L 126.34547777729779,0.0" fill="rgb(227,175,186)" stroke="rgb(51,51,51)" stroke-width="0.2"/>
+  <text dominant-baseline="middle" fill="rgb(31,31,31)" font-size="7" text-anchor="middle" x="-4.559469749299275" y="9.4">collar</text>
+  <text fill="rgb(245,96,66)" font-size="7" x="-25.0" y="12.0">0</text>
+  <text fill="rgb(245,96,66)" font-size="7" x="-16.719106901349683" y="12.0">1</text>
+  <text fill="rgb(245,96,66)" font-size="7" x="-8.438213802699366" y="12.0">2</text>
+  <text fill="rgb(245,96,66)" font-size="7" x="3.721423349351042" y="12.0">3</text>
+  <text fill="rgb(245,96,66)" font-size="7" x="15.88106050140145" y="12.0">4</text>
+  <text fill="rgb(245,96,66)" font-size="7" x="15.88106050140145" y="6.8">5</text>
+  <text fill="rgb(245,96,66)" font-size="7" x="-25.0" y="6.8">6</text>
+  <text fill="rgb(44,131,68)" font-size="7" text-anchor="middle" x="-20.85955345067484" y="9.0">0</text>
+  <text fill="rgb(44,131,68)" font-size="7" text-anchor="middle" x="-12.578660352024524" y="9.0">1</text>
+  <text fill="rgb(44,131,68)" font-size="7" text-anchor="middle" x="-2.358395226674162" y="9.0">2</text>
+  <text fill="rgb(44,131,68)" font-size="7" text-anchor="middle" x="9.801241925376246" y="9.0">3</text>
+  <text fill="rgb(44,131,68)" font-size="7" text-anchor="middle" x="15.88106050140145" y="6.4">4</text>
+  <text fill="rgb(44,131,68)" font-size="7" text-anchor="middle" x="-4.559469749299275" y="3.8">5</text>
+  <text fill="rgb(44,131,68)" font-size="7" text-anchor="middle" x="-25.0" y="6.4">6</text>
+  <text dominant-baseline="middle" fill="rgb(31,31,31)" font-size="7" text-anchor="middle" x="-95.0" y="-42.5">sleeve_L</text>
+  <text fill="rgb(245,96,66)" font-size="7" x="-95.0" y="-55.0">0</text>
+  <text fill="rgb(245,96,66)" font-size="7" x="-116.34547777729777" y="-42.97417036296927">1</text>
+  <text fill="rgb(245,96,66)" font-size="7" x="-116.0" y="-30.0">2</text>
+  <text fill="rgb(245,96,66)" font-size="7" x="-74.0" y="-30.0">3</text>
+  <text fill="rgb(245,96,66)" font-size="7" x="-73.65452222270221" y="-42.97417036296927">4</text>
+  <text fill="rgb(44,131,68)" font-size="7" text-anchor="middle" x="-106.84716557498977" y="-54.098309766158344">0</text>
+  <text fill="rgb(44,131,68)" font-size="7" text-anchor="middle" x="-116.1727388886489" y="-39.48708518148463">1</text>
+  <text fill="rgb(44,131,68)" font-size="7" text-anchor="middle" x="-95.0" y="-33.0">2</text>
+  <text fill="rgb(44,131,68)" font-size="7" text-anchor="middle" x="-73.8272611113511" y="-39.48708518148463">3</text>
+  <text fill="rgb(44,131,68)" font-size="7" text-anchor="middle" x="-83.15283442501021" y="-54.09830976615834">4</text>
+  <text dominant-baseline="middle" fill="rgb(31,31,31)" font-size="7" text-anchor="middle" x="95.0" y="-42.5">sleeve_R</text>
+  <text fill="rgb(245,96,66)" font-size="7" x="95.0" y="-55.0">0</text>
+  <text fill="rgb(245,96,66)" font-size="7" x="73.65452222270223" y="-42.97417036296927">1</text>
+  <text fill="rgb(245,96,66)" font-size="7" x="74.0" y="-30.0">2</text>
+  <text fill="rgb(245,96,66)" font-size="7" x="116.0" y="-30.0">3</text>
+  <text fill="rgb(245,96,66)" font-size="7" x="116.34547777729779" y="-42.97417036296927">4</text>
+  <text fill="rgb(44,131,68)" font-size="7" text-anchor="middle" x="83.15283442501023" y="-54.098309766158344">0</text>
+  <text fill="rgb(44,131,68)" font-size="7" text-anchor="middle" x="73.8272611113511" y="-39.48708518148463">1</text>
+  <text fill="rgb(44,131,68)" font-size="7" text-anchor="middle" x="95.0" y="-33.0">2</text>
+  <text fill="rgb(44,131,68)" font-size="7" text-anchor="middle" x="116.1727388886489" y="-39.48708518148463">3</text>
+  <text fill="rgb(44,131,68)" font-size="7" text-anchor="middle" x="106.8471655749898" y="-54.09830976615834">4</text>
+  <text dominant-baseline="middle" fill="rgb(31,31,31)" font-size="7" text-anchor="middle" x="-38.5" y="-35.0">front</text>
+  <text fill="rgb(245,96,66)" font-size="7" x="-67.0" y="0.0">0</text>
+  <text fill="rgb(245,96,66)" font-size="7" x="-10.0" y="0.0">1</text>
+  <text fill="rgb(245,96,66)" font-size="7" x="-10.0" y="-42.53410936357101">2</text>
+  <text fill="rgb(245,96,66)" font-size="7" x="-14.0" y="-66.70537329411465">3</text>
+  <text fill="rgb(245,96,66)" font-size="7" x="-29.5" y="-70.0">4</text>
+  <text fill="rgb(245,96,66)" font-size="7" x="-38.5" y="-61.0">5</text>
+  <text fill="rgb(245,96,66)" font-size="7" x="-47.5" y="-70.0">6</text>
+  <text fill="rgb(245,96,66)" font-size="7" x="-63.0" y="-66.70537329411465">7</text>
+  <text fill="rgb(245,96,66)" font-size="7" x="-67.0" y="-42.53410936357101">8</text>
+  <text fill="rgb(44,131,68)" font-size="7" text-anchor="middle" x="-38.5" y="-3.0">0</text>
+  <text fill="rgb(44,131,68)" font-size="7" text-anchor="middle" x="-10.0" y="-24.267054681785506">1</text>
+  <text fill="rgb(44,131,68)" font-size="7" text-anchor="middle" x="-14.385579746627483" y="-57.23822257307705">2</text>
+  <text fill="rgb(44,131,68)" font-size="7" text-anchor="middle" x="-21.75" y="-71.35268664705733">3</text>
+  <text fill="rgb(44,131,68)" font-size="7" text-anchor="middle" x="-32.136038969425" y="-66.636038969425">4</text>
+  <text fill="rgb(44,131,68)" font-size="7" text-anchor="middle" x="-44.863961030575" y="-66.63603896942499">5</text>
+  <text fill="rgb(44,131,68)" font-size="7" text-anchor="middle" x="-55.25" y="-71.35268664705733">6</text>
+  <text fill="rgb(44,131,68)" font-size="7" text-anchor="middle" x="-62.614420253372515" y="-57.23822257307703">7</text>
+  <text fill="rgb(44,131,68)" font-size="7" text-anchor="middle" x="-67.0" y="-24.267054681785506">8</text>
+  <text dominant-baseline="middle" fill="rgb(31,31,31)" font-size="7" text-anchor="middle" x="154.8454777772978" y="-35.000000000000014">back</text>
+  <text fill="rgb(245,96,66)" font-size="7" x="126.34547777729779" y="0.0">0</text>
+  <text fill="rgb(245,96,66)" font-size="7" x="126.34547777729779" y="-42.53410936357101">1</text>
+  <text fill="rgb(245,96,66)" font-size="7" x="130.3454777772978" y="-66.70537329411465">2</text>
+  <text fill="rgb(245,96,66)" font-size="7" x="145.8454777772978" y="-70.0">3</text>
+  <text fill="rgb(245,96,66)" font-size="7" x="154.8454777772978" y="-67.8">4</text>
+  <text fill="rgb(245,96,66)" font-size="7" x="163.8454777772978" y="-70.0">5</text>
+  <text fill="rgb(245,96,66)" font-size="7" x="179.3454777772978" y="-66.70537329411465">6</text>
+  <text fill="rgb(245,96,66)" font-size="7" x="183.3454777772978" y="-42.53410936357101">7</text>
+  <text fill="rgb(245,96,66)" font-size="7" x="183.3454777772978" y="0.0">8</text>
+  <text fill="rgb(44,131,68)" font-size="7" text-anchor="middle" x="126.34547777729779" y="-24.267054681785506">0</text>
+  <text fill="rgb(44,131,68)" font-size="7" text-anchor="middle" x="130.73105752392527" y="-57.23822257307703">1</text>
+  <text fill="rgb(44,131,68)" font-size="7" text-anchor="middle" x="138.0954777772978" y="-71.35268664705733">2</text>
+  <text fill="rgb(44,131,68)" font-size="7" text-anchor="middle" x="150.04747451700638" y="-71.13836295381812">3</text>
+  <text fill="rgb(44,131,68)" font-size="7" text-anchor="middle" x="159.6434810375892" y="-71.13836295381812">4</text>
+  <text fill="rgb(44,131,68)" font-size="7" text-anchor="middle" x="171.5954777772978" y="-71.35268664705733">5</text>
+  <text fill="rgb(44,131,68)" font-size="7" text-anchor="middle" x="178.9598980306703" y="-57.238222573077046">6</text>
+  <text fill="rgb(44,131,68)" font-size="7" text-anchor="middle" x="183.3454777772978" y="-24.267054681785506">7</text>
+  <text fill="rgb(44,131,68)" font-size="7" text-anchor="middle" x="154.8454777772978" y="-3.0">8</text>
+</svg>

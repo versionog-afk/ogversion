@@ -1,0 +1,5 @@
+start: garment HPS at y = 1.416 (side neck point of the body 1.416), clearance 8.2 mm, frames 20 + 45 + 60
+bending stiffness rescaled from the calibration edge 9.5 mm to 14.0 mm: 6.219
+cloth: 5493 verts, edge 14.0 mm, mass 0.300, tension 25.0, compression 6.0, shear 6.0, bending 6.219 (x5.0 max), quality 10
+frame  10/125       5s  depth 0.45  move max  66.44 mm mean 37.77 mm  strain mean +0.36% p1 -6.92% p99 +15.98%  seam gap max 12.97 mm  hem y 0.699..0.722  top y 1.400
+frame  20/125      16s  depth 1.00  move max 120.60 mm mean 55.38 mm  strain mean +1.55% p1 -11.78% p99 +39.77%  seam gap max 12.18 mm  hem y 0.733..0.787  top y 1.409
