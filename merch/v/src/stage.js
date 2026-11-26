@@ -1,5 +1,6 @@
 /* Stage: renderer, canvas size, device pixel ratio, frame rects, the pose
-   solver and the projection of the giant HTML "NA2" as a sign behind the figure. */
+   solver, the projection of the giant HTML "NA2" as a sign behind the figure,
+   and where the hem of the tee is on screen (for the colour swatches). */
 import { WebGLRenderer, PerspectiveCamera, Vector3, ACESFilmicToneMapping, SRGBColorSpace } from 'three';
 import { CFG, rad } from './config.js';
 
@@ -14,11 +15,11 @@ export const stage = {
   f: 1,              // focal length in CSS px
   fov: 40, portrait: true, coarse: false, dpr: 1,
   fadeUntil: 0,      // performance.now() until which a canvas fade is running
-  rect: {},          // frame rects by name: hero, print, item
+  rect: {},          // frame rects by name: hero, print, item; sw is the row of colour swatches
   nRest: null        // rest rect of the sign (no transform)
 };
 
-const FRAMES = { hero: '.fr-hero', print: '.fr-print', item: '.fr-item' };
+const FRAMES = { hero: '.fr-hero', print: '.fr-print', item: '.fr-item', sw: '.sw' };
 
 /* Creates the WebGL2 context and the renderer. Returns false when the
    browser cannot give us a context (the caller falls back to the static page). */
@@ -147,6 +148,23 @@ export function projectSign(opacity) {
   const cut = css.indexOf('|');
   stage.n.style.transform = css.slice(0, cut);
   stage.n.style.opacity = css.slice(cut + 1);
+}
+
+/* ---- the hem on screen ------------------------------------------------- */
+
+/* The lowest of the given points (the bottom corners of the tee, relative to
+   the figure's yaw group) as the camera sees them now: y in CSS px from the
+   top of the stage. Infinity when one of them is beside or behind the camera. */
+export function lowestOnScreen(points, matrix) {
+  const cam = stage.camera;
+  let y = -Infinity;
+  for (const p of points) {
+    _v.copy(p).applyMatrix4(matrix);
+    if (_d.copy(_v).applyMatrix4(cam.matrixWorldInverse).z > -cam.near) return Infinity;
+    _v.project(cam);
+    y = Math.max(y, (1 - _v.y) / 2 * stage.H);
+  }
+  return y;
 }
 
 /* ---- canvas opacity (arrival flicker, jump dip, fades) ---------------- */

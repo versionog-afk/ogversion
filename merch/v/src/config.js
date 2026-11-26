@@ -2,8 +2,9 @@
    Lengths are metres, angles degrees, times seconds unless a name says otherwise. */
 
 /* Injected by build.cjs: byte sizes for the loader line, the pixel sizes of
-   the two prints with the caption box of the back print, and the average
-   colour of each rack photo. */
+   the two prints with the boxes of the back artwork (the whole artwork, the
+   map, the caption; fractions of the texture, v from the top), and the
+   average colour of each rack photo. */
 /* global __BYTES__, __ART__, __AVG__ */
 export const BYTES = __BYTES__;
 export const ART = __ART__;
@@ -32,14 +33,14 @@ export const CFG = {
 
   /* anchors measured on the model */
   TOP_BELOW_HEM: 0.06,        // the "top" box runs from this far below the hem to the top of the head
-  CHEST_GROW: 2.4,            // CHEST frames the chest print grown by this
-  BACK_GROW: 1.12,            // BACK frames the back print grown by this
-  /* MAP frames this part of the back print (v from the top). Portrait: the upper 62 %, the caption sits
-     under the frame, on screen. Landscape: the frame is nearly as high as the screen, so there the caption
-     has to be inside it and the top of the map may run past it instead. */
-  MAP_PART_P: [0, 0.62], MAP_PART_L: [0.08, 1.0],
-  /* the red line under the caption of the back print: caption box bottom + dv, drawn as a ribbon on the cloth */
-  LINE: { dv: 0.022, height: 0.0025, lift: 0.0005, steps: 48, color: 0xc6362b },
+  CHEST_GROW: 1.5,            // CHEST frames the chest print grown by this (spec 2.4: tuned on renders so the lettering fills a phone)
+  BACK_GROW: 1.12,            // BACK frames the back artwork (map and caption) grown by this
+  /* MAP frames the artwork and the red line under its caption, with this much air round them (a fraction
+     of the artwork's width on each side) */
+  MAP_AIR: 0.03,
+  /* The red line under the caption of the back print, drawn as a ribbon on the cloth from the caption's
+     left end to its right end. gap: how far under the caption, in caption heights. */
+  LINE: { gap: 0.36, height: 0.0025, lift: 0.0005, steps: 48, color: 0xc6362b },
 
   /* camera */
   FOV_PORTRAIT: 40,
@@ -58,37 +59,34 @@ export const CFG = {
     BACK: { az: 180, el: 0, roll: 0 },
     MAP: { az: 186, el: 3, roll: -3 },
     SIDE2: { az: 265, el: 4, roll: 0 },
-    ITEM: { az: 360, el: 0, roll: 0 },
-    NEAR_BACK: { az: 0, el: 0, roll: 0 }   // "Iš arti" with the figure turned round: its back, seen from the front
+    ITEM: { az: 360, el: 0, roll: 0 }
   },
   CHEST_SHARP: 1.5,           // never magnify a chest-print texel beyond this many device pixels
 
-  /* scroll storyboard, in screens (S) or as block anchors id@t */
+  /* The scroll storyboard. Plain numbers are screens (S) from the top of the page; the info* keys are
+     anchors info@t and the st* keys anchors stovas@t (the block's top edge has travelled t screens up from
+     the viewport bottom). stovas@0 is also the moment the info block's bottom edge enters the viewport,
+     so everything after the block is timed from its end, however tall it is. */
   KEY: {
-    creepEnd: 0.2, chestAt: 0.8,
-    hudOff: 0.15, hudOn: 0.10, typeOff: 0.8,
+    creepEnd: 0.20, chestAt: 0.75, typeOff: 0.75,
+    uiOff: 0.15, uiOn: 0.10,              // the range input is live in the hero only
     holdFrom: 0.25,                       // from here the story holds the figure to its front, ±35°
-    apFrom: 0.10, apSide: 0.50, apBack: 1.00,
-    skMapFrom: 0.45, skMapAt: 0.85,
-    skDark: 0.62, skLine0: 0.75, skLine1: 0.95,
-    tiekLight: 0.55, tiekBack: 0.80,
-    stSide: 0.15, stFree: 0.30, stItem: 0.40,
+    walkFrom: 0.95, side: 1.35, back: 1.75,
+    mapFrom: 1.90, mapAt: 2.25,
+    dark: 2.08, line0: 2.20, line1: 2.40,
+    infoLight: 0.15, infoBack: 0.45,
+    stSide: 0.25, stItem: 0.65, stFree: 0.55,
+    stRail0: 0.90, stRail1: 1.15, stPhotos: 1.35,
     walk: 0.30,                           // least scroll for each leg of the walk back to the front
-    stRail0: 0.70, stRail1: 0.90, stPhotos: 0.90, stSpan: 1.40,
-    /* Portrait: plates are full width, so whatever happens while a plate is
-       still leaving the screen happens behind it. There the windows are
-       taller (ap 130svh, sk 100svh, stovas 280svh) and these beats start
-       once the frame is clear: the walk round, the rail and the photos. */
-    apFromP: 0.50, apSideP: 0.90, apBackP: 1.30,
-    stRail0P: 1.05, stRail1P: 1.30, stPhotosP: 1.40,
-    lightKeep0: 0.2, lightKeep1: 0.7,     // "Šviesa" override lives inside sk@0.2 … tiek@0.7
     minGap: 0.05
   },
   SCROLL_TAU: 0.12,
   JUMP: 2,                    // a jump of more than this many screens in one frame dips the canvas
   JUMP_MS: 220,
-  NEAR_MS: 700,               // "Iš arti" camera ease
-  NEAR_RELEASE: 0.35,         // screens of scrolling that release it
+
+  /* colour swatches: shown while the hem projects at least `on` px above their row, hidden again under `off` */
+  SWATCH: { on: 14, off: 6, lip: 64 },
+  COLOR_MS: 250,              // the cloth eases from one colour to the other in this time
 
   /* rack */
   RAIL: { size: 0.01, above: 0.10, x0: -0.9, x1pad: 0.6, color: 0xc6362b },
@@ -121,12 +119,19 @@ export const CFG = {
   },
 
   /* materials */
-  /* spec: tee colour 0x0e0e10, rim 8.0 with power 3.0 and no base gain; tuned on renders (see LIGHT) */
+  /* The tee in its two colours. base and rim are gains on the cloth's diffuse light (see scene.js): black
+     cotton needs a lot of both to separate from the void, white cotton needs its light taken down a little
+     so that folds keep their shading and nothing clips.
+     Spec for the black tee: colour 0x0e0e10, rim 8.0 with power 3.0 and no base gain; tuned on renders (see LIGHT). */
   CLOTH: { color: 0x16161a, roughness: 0.9, base: 2.0, rim: 16.0, rimPow: 2.0, sheen: 1, sheenRoughness: 0.75, sheenColor: 0x2a2a30 },
+  CLOTH_WHITE: { color: 0xecebe6, base: -0.2, rim: 0.3, rimPow: 2.0 },
   PANTS: { color: 0x2b2a28, roughness: 0.9, base: 1.0, rim: 8.0, rimPow: 2.2, sheen: 0.6, sheenRoughness: 0.75, sheenColor: 0x3a3832 },
   SHOES: { color: 0x121213, roughness: 0.55 },
   PLASTER: { color: 0xd6cfc3, roughness: 0.62, hairDarker: 0.12 },
   PRINT: { roughness: 0.82 },
+  /* the back print is one-colour line art: bone ink on the black tee, near-black ink on the white one; the
+     copy that stays lit in the dark is bone on either */
+  INK: { onBlack: 0xefece6, onWhite: 0x141414, lit: 0xefece6 },
   FADE: [0.30, 0.85],         // legs fade into the dark between these heights above the ground
 
   /* spin */
@@ -137,14 +142,14 @@ export const CFG = {
     k: 1.6, kick: 20,
     vFlick: 180, kMin: 0.75, kMax: 1.4, vSpring: 90, snap: 18,
     K: 90, zeta: 0.55,
-    limit: 35, beyond: 0.35, vClose: 330, zetaClose: 0.8, zetaRange: 0.9, zetaButton: 0.75,
+    limit: 35, beyond: 0.35, vClose: 330, zetaClose: 0.8, zetaRange: 0.9,
     vRest: 2, xRest: 0.3
   },
   SWAY: { deg: 2, hz: 0.2, life: 4 },
-  ARRIVAL: { from: -200, flicker: [[0, 0], [60, 0.25], [120, 0.05], [180, 1]], hudDelayMs: 300, fadeMs: 300, maxScroll: 0.3 },
+  ARRIVAL: { from: -200, flicker: [[0, 0], [60, 0.25], [120, 0.05], [180, 1]], uiDelayMs: 300, fadeMs: 300, maxScroll: 0.3 },
 
   /* pointer arbitration */
-  EDGE: 20, SLOP: 8, HORIZ: 1.2, TAP_MS: 250, HINT_PX: 12,
+  EDGE: 20, SLOP: 8, HORIZ: 1.2, TAP_MS: 250,
 
   /* loading and fallback */
   TIMEOUT_MS: 10000,

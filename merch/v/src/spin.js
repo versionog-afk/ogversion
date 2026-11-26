@@ -80,8 +80,7 @@ export const spin = {
   close: false,           // held to one side: only ±35° round `centre`
   centre: 0,              // 0 the front, 180 the back
   dragBase: 0,            // unresisted yaw while dragging in close-up
-  calm: false,
-  onSettle: null,         // (detent | null) → hud
+  onSettle: null,         // (detent | null) → controls
   onInput: null           // any hand input → loop wake, sway timer
 };
 
@@ -117,12 +116,6 @@ export function detent() {
   if (Math.abs(a - 180) < 0.5) return 180;
   return null;
 }
-/* which side is nearer the camera right now, or where the figure is heading: 0 or 180 */
-export function facing() {
-  const c = spin.core, a = mod360(c.mode === 'spring' || c.mode === 'flick' ? c.D : c.x);
-  return a > 90 && a < 270 ? 180 : 0;
-}
-
 export function grab() {
   const c = spin.core;
   c.grab();
@@ -148,15 +141,15 @@ export function release(v) {
   else c.release(v);
 }
 
-/* Buttons and the range input: turn to an absolute angle by the short way. */
+/* The range input: turn to an absolute angle by the short way. */
 export function turnTo(deg, zeta) {
   const c = spin.core;
   const delta = mod360(deg - c.x + 180) - 180;
   c.springTo(c.x + delta, zeta);
 }
 
-/* Called every frame by the timeline: while the story or "Iš arti" holds the
-   figure, it springs to that side and the hand only wiggles it. */
+/* Called every frame by the timeline: while the story holds the figure, it
+   springs to that side and the hand only wiggles it. */
 export function setClose(on, centre) {
   if (on === spin.close && (!on || centre === spin.centre)) return;
   spin.close = on;
@@ -186,7 +179,7 @@ export function spinBusy() { return spin.core.busy; }
    is either a horizontal gesture (ours) or it is dropped (the browser's).
    All listeners are passive and nothing calls preventDefault.
 
-   handlers: { canStart(e) → bool, start(), move(dxPx, degPerPx, farthestPx), end(vPxPerSec, degPerPx), tap(e) }
+   handlers: { canStart(e) → bool, start(), move(dxPx, degPerPx), end(vPxPerSec, degPerPx), tap(e) }
    tap is only used by the rack (a tap on a photo panel); a tap on the figure does nothing.
    degPerPx is the spec's drag rate for the pointer type (touch or mouse). */
 export function initPointer(handlers) {
@@ -207,12 +200,12 @@ export function initPointer(handlers) {
     if (vv && vv.scale > 1.01) return;                             // pinch-zoomed: leave everything to the browser
     if (e.clientX < CFG.EDGE || e.clientX > innerWidth - CFG.EDGE) return;  // system back-swipe zones
     const t = e.target;
-    if (!t || !t.closest || t.closest('a,button,input,dialog,.pl,.blk')) return;   // controls, text plates, the opaque blocks
+    if (!t || !t.closest || t.closest('button,input,dialog,.info,.blk')) return;   // controls, the info plate, the grid
     if (!handlers.canStart(e)) return;
     const touch = e.pointerType !== 'mouse';
     g = {
       id: e.pointerId, x0: e.clientX, y0: e.clientY, t0: e.timeStamp, mode: 'wait', target: t,
-      x: e.clientX, far: 0, samples: [],
+      x: e.clientX, samples: [],
       rate: touch ? clamp(P.touchPerWidth / innerWidth, P.touchMin, P.touchMax) : P.mouse
     };
   }, { passive: true });
@@ -231,10 +224,9 @@ export function initPointer(handlers) {
     }
     const step = e.clientX - g.x;
     g.x = e.clientX;
-    g.far = Math.max(g.far, Math.abs(dx));
     g.samples.push(e.timeStamp, e.clientX);
     if (g.samples.length > 40) g.samples.splice(0, 2);
-    handlers.move(step, g.rate, g.far);
+    handlers.move(step, g.rate);
   }, { passive: true });
 
   addEventListener('pointerup', e => {

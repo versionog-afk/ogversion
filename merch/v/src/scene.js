@@ -1,6 +1,6 @@
-/* Scene: environment, three lights, the figure's materials (cloth, plaster,
-   the fade of the legs into the dark), the two prints, the lit copy of the
-   back print, the red line under its caption, and uvToWorld.
+/* Scene: environment, three lights, the figure's materials (cloth in its two
+   colours, plaster, the fade of the legs into the dark), the two prints, the
+   lit copy of the back print, the red line under its caption, and uvToWorld.
 
    Graph:
      scene (environment, no background)
@@ -14,7 +14,7 @@ import {
   BoxGeometry, PlaneGeometry, BufferGeometry, BufferAttribute, BackSide, FrontSide, DoubleSide,
   Texture, SRGBColorSpace
 } from 'three';
-import { CFG, ART, lerp } from './config.js';
+import { CFG, ART, lerp, smoothstep } from './config.js';
 
 export const world = {
   scene: null,
@@ -24,11 +24,15 @@ export const world = {
   groups: { printFront: [], printBack: [], hair: [], pants: [], shoes: [], body: [], tee: [], other: [] },
   printFront: null, printBack: null, printLit: null, lineRed: null,
   frontTex: null, backTex: null,
+  teeMats: [],               // the cloth materials of the tee: the colour switch drives them
   /* measured from the model at load, never hard-coded */
   F: new Box3(),             // everything
   T: new Box3(),             // the tee
   PF: new Box3(),            // chest print
-  PB: new Box3(),            // back print
+  PB: new Box3(),            // back print (the whole decal: its canvas is taller than the artwork)
+  art: null,                 // { c, w, h }: the back artwork (map and caption) on the cloth
+  mapShot: null,             // { c, w, h }: the artwork plus the red line under its caption
+  hem: [],                   // the four bottom corners of T, relative to the yaw group
   TOP: new Box3(),           // head to just below the hem, as wide and deep as the tee
   C: new Vector3(),          // centre of TOP
   axis: new Vector3(),       // the yaw axis: centre of F in x and z
@@ -72,7 +76,8 @@ const fade = { value: new Vector2(CFG.FADE[0], CFG.FADE[1]) };
    cloth: black cotton gives almost nothing back, so a view-angle term is
           added to the diffuse light: edges and fold flanks pick up the rim
           lights and the garment separates from the void.
-          uCloth = (gain on all diffuse light, extra gain at grazing angles, its falloff power)
+          uCloth = (gain on all diffuse light, extra gain at grazing angles, its falloff power).
+          The first may be negative: the white tee takes its diffuse light down a little.
    fade:  everything below the hem sinks into the black: the outgoing light
           is multiplied by smoothstep(uFade.x, uFade.y, world y). */
 function patch(m, cloth, fades) {
@@ -194,6 +199,17 @@ export function uvToWorld(mesh, u, v, outP, outN) {
   return true;
 }
 
+/* A box of a print's texture (u0…u1, v0…v1, v from the top) as it lies on the
+   cloth: its centre, and its width and height measured through that centre. */
+function uvBox(mesh, b) {
+  const uc = (b.u0 + b.u1) / 2, vc = (b.v0 + b.v1) / 2;
+  const l = new Vector3(), r = new Vector3(), t = new Vector3(), d = new Vector3(), c = new Vector3();
+  const ok = uvToWorld(mesh, b.u0, vc, l) && uvToWorld(mesh, b.u1, vc, r) && uvToWorld(mesh, uc, b.v0, t) && uvToWorld(mesh, uc, b.v1, d) && uvToWorld(mesh, uc, vc, c);
+  if (!ok) throw new Error('model: the back print has no UVs');
+  c.set((l.x + r.x) / 2, (t.y + d.y) / 2, c.z);
+  return { c, w: l.distanceTo(r), h: t.distanceTo(d) };
+}
+
 /* ---- the red line ------------------------------------------------------ */
 
 /* A ribbon that lies on the cloth under the caption of the back print: it
@@ -201,8 +217,8 @@ export function uvToWorld(mesh, u, v, outP, outN) {
    back and stays glued to it when the figure turns. `along` runs 0 → 1 from
    its left end (as seen from behind); the fragment shader cuts it off at
    uDraw, which is how the line draws. */
-function buildLine(mesh, box) {
-  const K = CFG.LINE, n = K.steps, v = Math.min(0.995, box.v1 + K.dv);
+function buildLine(mesh, box, v) {
+  const K = CFG.LINE, n = K.steps;
   const P = [], N = [];
   for (let i = 0; i <= n; i++) {
     const p = new Vector3(), nn = new Vector3();
@@ -300,6 +316,7 @@ export function buildScene(gltf, images, renderer, tier) {
     }
   };
   dress(G.tee, src => clothMaterial(src, tier, CFG.CLOTH, false));
+  world.teeMats = [...new Set(G.tee.map(m => m.material))];
   dress(G.pants.concat(G.other), src => clothMaterial(src, tier, CFG.PANTS, true));
   dress(G.body, src => plasterMaterial(src, 0, true));
   dress(G.hair, src => plasterMaterial(src, CFG.PLASTER.hairDarker, false));
@@ -314,7 +331,7 @@ export function buildScene(gltf, images, renderer, tier) {
   /* the map that stays lit: an unlit copy of the back print */
   const pb = world.printBack;
   const lit = world.printLit = new Mesh(pb.geometry, new MeshBasicMaterial({
-    map: world.backTex, transparent: true, toneMapped: false, depthWrite: false,
+    map: world.backTex, color: CFG.INK.lit, transparent: true, toneMapped: false, depthWrite: false,
     polygonOffset: true, polygonOffsetFactor: -6, polygonOffsetUnits: -6, opacity: 0
   }));
   lit.position.copy(pb.position);
@@ -333,11 +350,66 @@ export function buildScene(gltf, images, renderer, tier) {
   scene.add(yaw);
   scene.updateMatrixWorld(true);
 
-  /* the red line under the caption */
-  world.lineRed = buildLine(pb, ART.back.captionBox);
+  /* Where the back artwork lies on the cloth, from the boxes the build read from the art's metadata: the
+     camera frames these, not the decal, whose canvas has an empty band under the caption. */
+  const B = ART.back, cap = B.captionBox;
+  const lineV = Math.min(0.995, cap.v1 + (cap.v1 - cap.v0) * CFG.LINE.gap);
+  world.art = uvBox(pb, B.artBox);
+  world.mapShot = uvBox(pb, { u0: B.artBox.u0, u1: B.artBox.u1, v0: B.artBox.v0, v1: lineV });
+
+  /* the red line under the caption, as wide as the caption */
+  world.lineRed = buildLine(pb, cap, lineV);
   content.add(world.lineRed);
 
+  /* the hem, for the colour swatches: they only show while it is clear of them */
+  world.hem = [[T.min.x, T.min.z], [T.max.x, T.min.z], [T.min.x, T.max.z], [T.max.x, T.max.z]]
+    .map(([x, z]) => new Vector3(x - world.axis.x, T.min.y, z - world.axis.z));
+
+  shirt.k = shirt.want = 0;
+  shirt.name = 'black';
+  applyShirt(0);
+
   return world;
+}
+
+/* ---- the colour of the tee -------------------------------------------- */
+
+/* The tee comes in black and in white. A switch changes the cloth (colour
+   and the two gains of its shader) and the ink of the back print, which is
+   one-colour line art: bone on black cloth, near-black on white. Nothing
+   else changes; the copy of the map that stays lit in the dark keeps its
+   own bone colour. */
+export const shirt = { name: 'black', k: 0, want: 0 };   // k: 0 black … 1 white, eased
+
+const clothBlack = new Color(CFG.CLOTH.color), clothWhite = new Color(CFG.CLOTH_WHITE.color);
+const inkOnBlack = new Color(CFG.INK.onBlack), inkOnWhite = new Color(CFG.INK.onWhite);
+
+function applyShirt(k) {
+  const A = CFG.CLOTH, B = CFG.CLOTH_WHITE;
+  for (const m of world.teeMats) {
+    m.color.lerpColors(clothBlack, clothWhite, k);
+    m.userData.cloth.value.set(lerp(A.base, B.base, k), lerp(A.rim, B.rim, k), lerp(A.rimPow, B.rimPow, k));
+  }
+  const ink = world.printBack.material;
+  ink.color.lerpColors(inkOnBlack, inkOnWhite, k);
+  ink.emissive.copy(ink.color);
+}
+
+/* 'black' or 'white'; anything else is ignored. Returns true if the choice changed. */
+export function chooseShirt(name) {
+  if ((name !== 'black' && name !== 'white') || name === shirt.name) return false;
+  shirt.name = name;
+  shirt.want = name === 'white' ? 1 : 0;
+  return true;
+}
+
+/* One frame of the ease between the two colours. Returns true while it runs. */
+export function stepShirt(dt) {
+  if (shirt.k === shirt.want) return false;
+  const step = dt / (CFG.COLOR_MS / 1000);
+  shirt.k = shirt.want > shirt.k ? Math.min(1, shirt.k + step) : Math.max(0, shirt.k - step);
+  applyShirt(smoothstep(0, 1, shirt.k));
+  return true;
 }
 
 /* ---- per-frame light state -------------------------------------------- */
