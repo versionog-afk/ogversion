@@ -58,6 +58,24 @@ Unfinished or unverified:
 - Model: only the body stage ran (figure, hair, trousers, shoes). The oversized shirt has not been simulated; the shirt in `current.glb` is a crude shell.
 - Prints: `art/front.png` and `art/back.png` are rough threshold cut-outs. The clean front matte and the vector redraw of the map were in progress. Ask the owner for the original print files first.
 
+## Phase 0 dry run in a cloud container (2026-11-26)
+
+The hand-over prompt was run in a cloud session again, not on the owner's computer (no computer was attached). Everything that does not need the owner's hardware was checked there; the rest of phase 0 is still open.
+
+Machine: Ubuntu 24.04 VM, 4 vCPU Intel Xeon 2.3 GHz, 15 GB RAM, no GPU (WebGL through SwiftShader), Node 22.23.5, Git 2.43.0, Python 3.13.18, no Blender.
+
+- `npm install` and `npm run build`: ok; the build output is byte-identical to the committed files. First view 1198.5 KB of 2355.2 KB.
+- `npm run check-model`: no contract warnings (63,307 triangles, 1.21 MB, 7 meshes).
+- Page with `?3d=1` at 390 × 664: ready, tier 1, 6 to 9 draw calls, 63,311 triangles (67,503 in the dark beat), no console errors. Without `?3d=1` the inline gate rejects the software renderer and `app.js` is never loaded, so `window.__m` does not exist in flat mode.
+- `tests/test-int-na2.js` ran to the end for the first time: 59 of 61 pass (3.5 min on software GL). The two failures:
+  - Tab order. On a freshly loaded page the order is exactly the expected one. In the test it runs after the lightbox checks: the first Tab starts from the last opener (blurring does not reset the browser's starting point), and after the wrap to the top the four HUD controls are skipped because the keys are pressed with no pause while the HUD is still inert. Fix the test state (reload, or focus the top first); then check with a real keyboard whether the skip after the wrap can also happen at human speed.
+  - Wiggle in the dark beat. The test wants the yaw to stay within ±35.5°; the page gives 45.5° for 180 px because the limit is soft (35°, then 0.35 of the travel), which is what the desktop close-up check accepts (35° to 70°). `spec/SPEC.md` has to say which is right.
+- `npm run build:full` stops at `photo missing: work3d/ref/worn-back.jpg`, as expected without the owner's photos. It has already rewritten `merch/v/figure.glb` by then (63,307 triangles and 374,292 bytes against the committed 63,311 and 373,912): if the run fails, restore the file with `git checkout -- merch/v/figure.glb`.
+- `package-lock.json` is now committed so that every machine resolves the same tool versions.
+- In a cloud container the browser is pre-installed and `npx playwright install` must not be run: install the matching version instead (`npm install --no-save playwright@1.63.0` for Chromium build 1243). `blender.org` is not reachable from there; `bpy` 5.3.0 is on PyPI.
+
+Still open from phase 0, all of it on the owner's computer: the hardware list (GPU and its memory), Blender, the page on a real GPU without `?3d=1` (`window.__m`, smooth spin and scroll), the originals in `ref/` and a full `npm run build:full`. `spec/` was not on the branch yet at the time of this run.
+
 ## House rules
 
 - Work on branch `claude/friendly-cori-d4z8b5`. No pull request, no merge to `main` and nothing on the live site without the owner's explicit go-ahead. The page keeps `<meta name="robots" content="noindex">` until then.
