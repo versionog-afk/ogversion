@@ -73,3 +73,8 @@ Make the shirt material view ("inspect") show how the cheaper and the more expen
 
 - Reference frames 01 to 04 and READ-ME-FABLE.txt: on the owner's Mac only. Not available to the cloud session; to be copied into `work3d/intro/ref/` (local only).
 - Generation service: the connected workspace is on the free plan with 5.25 credits. Quotes taken that day: the cheapest 4-second clip costs 8 credits (480p), a 4-second 1080p clip with first and last frame 10 credits, a 4-second 720p clip on the default model 28 credits. No clip can be generated until the plan or the credits change.
+
+## Decisions by the owner after the brief (2026-11-26)
+
+- The workspace was upgraded to the Plus plan the same day (1,205 credits at that moment), so generation is possible.
+- Generate at 4K from the first take, without lower-resolution tests. Quotes taken that day for a 4-second clip without audio: 112 credits at 4K on the default model with first and last frame, 88 on its predecessor in standard mode, 65 for a 5-second clip on the multi-frame model; 64 at 1080p on the default model. One take of all three shots at 4K on the default model is about 336 credits.
