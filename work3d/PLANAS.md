@@ -50,7 +50,7 @@ Baigta, kai: 3D vaizdas šalia tikros nuotraukos atrodo kaip tie patys marškin�
 
 ## 4 fazė. Spaudos
 
-- Geriausia – originalūs spaudos failai iš savininko. Jei jų nėra: „NA2“ iškerpama iš stambaus plano nuotraukos, žemėlapis perpiešiamas iš įrašo kadrų (pradėta, grubūs variantai jau yra `work3d/art/`).
+- Padaryta: savininkas atsiuntė originalius spaudos failus, iš jų sukurtos abi tekstūros (`work3d/art/`, skriptas `make_textures.py`). Originalai laikomi tik kompiuteryje, `work3d/ref/originals/`.
 - Spaudos uždedamos tikrose vietose ir tikro dydžio, seka audinio raukšles.
 
 Baigta, kai: abi spaudos ryškios iš arti ir sutampa su tikrais marškinėliais.

@@ -36,12 +36,12 @@ PORT=8361 node tests/shots-na2.js 390x664     # storyboard screenshots into test
 | `model/current.glb` | the model the page is built from: for now a stand-in (real body, crude shirt shell, two decals) |
 | `model/body/` | figure pipeline: shape and pose from a CC0 base mesh, hair, trousers, shoes (`build.sh`), plus `body.glb` |
 | `model/teegen/` | an earlier garment pipeline for a regular-fit tee: lofted shell, Blender cloth simulation, decal projection, normal / occlusion bake, GLB export. Reuse for the oversized shirt |
-| `art/` | print textures the build reads (`front.png` 3:2, `back.png` 3:4, `meta.json`) and the unfinished scripts that were recovering them from the photos |
+| `art/` | print textures the build reads (`front.png` 3:2, `back.png` 3:4, `meta.json`) and `make_textures.py`, which builds them from the owner's original artwork |
 | `ref/` | owner's originals; mostly local-only |
 | `research/` | notes on tools found on GitHub, with licences and hardware needs |
 | `out/`, `ext/`, `fonts/` | local outputs and downloads, not in git |
 
-Scripts in `model/` and `art/` were written for one fixed directory layout and then path-mapped to this one; they are meant to be run from the repository root and may need small path fixes. `model/body/common.py` expects the CC0 human base mesh at `work3d/ext/makehuman` (`git clone --depth 1 https://github.com/makehumancommunity/makehuman work3d/ext/makehuman`). Blender scripts need Python with `bpy` (Blender's own Python, or `pip install bpy`); set `BLENDER_PY` to that interpreter.
+Scripts in `model/` were written for one fixed directory layout and then path-mapped to this one; they are meant to be run from the repository root and may need small path fixes. `model/body/common.py` expects the CC0 human base mesh at `work3d/ext/makehuman` (`git clone --depth 1 https://github.com/makehumancommunity/makehuman work3d/ext/makehuman`). Blender scripts need Python with `bpy` (Blender's own Python, or `pip install bpy`); set `BLENDER_PY` to that interpreter.
 
 ## State when the work moved
 
@@ -56,7 +56,7 @@ Unfinished or unverified:
 - The page builder was interrupted before its own verification finished: the interaction tests (`tests/test-int-na2.js`) and the layout sweep across viewports have not been run to the end, and the fallback tests (static mode, blocked files, timeout, no WebGL) still have to be written for this layout. Start there.
 - The rack (nine photo panels, flick, tap to lightbox), the quality governor, context-loss recovery, calm mode with „Įjungti 3D“ and the opaque escape hatch are not built (`merch/v/src/rack.js` is a stub with the seam documented at the top).
 - Model: only the body stage ran (figure, hair, trousers, shoes). The oversized shirt has not been simulated; the shirt in `current.glb` is a crude shell.
-- Prints: `art/front.png` and `art/back.png` are rough threshold cut-outs. The clean front matte and the vector redraw of the map were in progress. Ask the owner for the original print files first.
+- Prints: done. `art/front.png` and `art/back.png` are built from the owner's original artwork by `art/make_textures.py` (the originals are in `ref/originals/`, local only). The back canvas is 3:4 with the artwork top-aligned at its true proportions, so the band under the caption is empty; `art/meta.json` holds the boxes of the artwork, the map and the caption. Ask the owner how wide the back print really is in centimetres.
 
 ## House rules
 
