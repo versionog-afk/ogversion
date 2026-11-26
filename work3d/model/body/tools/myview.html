@@ -1,10 +1,10 @@
 <!doctype html><meta charset="utf-8"><title>na2 figure harness</title>
 <style>html,body{margin:0;height:100%;background:#000;overflow:hidden}canvas{display:block;width:100vw;height:100vh}</style>
 <canvas id="c"></canvas>
-<script type="importmap">{"imports":{"three":"/node_modules/three/build/three.module.js","three/addons/":"/node_modules/three/examples/jsm/"}}</script>
+<script type="importmap">{"imports":{"three":"/v3/node_modules/three/build/three.module.js","three/addons/":"/v3/node_modules/three/examples/jsm/"}}</script>
 <script type="module">
 // Inspection copy of the shared viewer (free camera views). Not the judge.
-// ?model=/path.glb  ?front=/path.png  ?back=/path.png  (paths are relative to the repository root)
+// ?model=/path.glb  ?front=/path.png  ?back=/path.png  (paths are relative to NA2_ROOT)
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { MeshoptDecoder } from 'three/addons/libs/meshopt_decoder.module.js';
@@ -37,7 +37,7 @@ try {
   const loader = new GLTFLoader(); loader.setMeshoptDecoder(MeshoptDecoder);
   const gltf = await loader.loadAsync(q.get('model'));
   const tl = new THREE.TextureLoader();
-  texFront = await tl.loadAsync(q.get('front') || '/art/front.png'); texBack = await tl.loadAsync(q.get('back') || '/art/back.png');
+  texFront = await tl.loadAsync(q.get('front') || '/na2/art/front.png'); texBack = await tl.loadAsync(q.get('back') || '/na2/art/back.png');
   for (const t of [texFront, texBack]) { t.colorSpace = THREE.SRGBColorSpace; t.flipY = false; t.anisotropy = 8; }
   scene.add(gltf.scene); scene.updateMatrixWorld(true);
   let tris = 0; const names = [];

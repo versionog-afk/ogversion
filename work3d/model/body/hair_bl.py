@@ -1,6 +1,6 @@
 """Hair: a sculpted cap pulled back into a low bun. Built as a signed distance field around the head
 (nearest-surface queries with Blender's BVH), meshed with surface nets, smoothed and decimated in Blender.
-Run with the Blender python: python with bpy (pip install bpy, or Blender's own Python)"""
+Run with the Blender python: bvenv/bin/python hair_bl.py"""
 import os, sys, json, time
 import numpy as np
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -16,7 +16,7 @@ HP = dict(h=0.002, C=(0.0, 0.014, -0.070),
           ear_a=(0.076, -0.039, -0.077), ear_b=(0.076, 0.011, -0.087), ear_r=0.019,
           t_edge=0.0028, t_body=0.0062, t_back=0.0035,
           bun_c=(0.0, -0.028, -0.180), bun_r=(0.041, 0.037, 0.031), bun_k=0.016, gather=0.007,
-          strands=24, strand_amp=0.0009,
+          strands=24, strand_amp=0.0008,
           target_tris=5600)
 
 def smoothstep(x):
@@ -161,7 +161,7 @@ def build(hp=HP, debug_mask=False):
     dbun_c = np.linalg.norm(pts - bc, axis=1)
     Cw = np.array(hp['C']) + E
     back = smoothstep((Cw[2] - loc[:, 2]) / 0.07)
-    T = hp['t_edge'] + hp['t_body'] * smoothstep(m / 0.028) + hp['t_back'] * back \
+    T = hp['t_edge'] + hp['t_body'] * smoothstep(m / 0.028) + hp['t_back'] * back * smoothstep(m / 0.022) \
         + hp['gather'] * np.exp(-(dbun_c / 0.075) ** 2) * smoothstep(m / 0.02)
     # broad combed-back bands that run from the hairline to the bun
     if hp.get('strand_amp', 0) > 0:
@@ -171,7 +171,7 @@ def build(hp=HP, debug_mask=False):
         psi = np.arctan2(perp @ w, perp @ u); rp = np.linalg.norm(perp, axis=1)
         band = np.cos(hp['strands'] * psi)
         T = T + hp['strand_amp'] * band * smoothstep(m / 0.03) * smoothstep((rp - 0.03) / 0.04) * smoothstep((along - 0.0) / 0.04)
-    cap = smax(dh - T, -m, 0.0025)
+    cap = smax(dh - T, -m, 0.0025 + 0.0045 * back)        # the edge is rounder at the nape, where the neck falls away under it
     cap = np.maximum(cap, -(dh + 0.006))
     cap[~near] = 0.03
     bun = (np.linalg.norm((pts - bc) / br, axis=1) - 1) * br.min()
@@ -196,12 +196,20 @@ def build(hp=HP, debug_mask=False):
     ntri = len(q2) * 2
     dec.ratio = min(1.0, hp['target_tris'] / ntri)
     bpy.ops.object.modifier_apply(modifier='dec')
+    # tidy up after the decimation: no zero-area faces, no doubled vertices, no loose bits
+    bm = bmesh.new(); bm.from_mesh(ob.data)
+    bmesh.ops.dissolve_degenerate(bm, dist=2e-5, edges=bm.edges[:])
+    bmesh.ops.remove_doubles(bm, verts=bm.verts[:], dist=2e-5)
+    loose = [v for v in bm.verts if not v.link_faces]
+    if loose: bmesh.ops.delete(bm, geom=loose, context='VERTS')
+    bmesh.ops.triangulate(bm, faces=bm.faces[:])
+    bm.to_mesh(ob.data); bm.free(); ob.data.update()
     hv2, ht2 = to_np(ob)
     print('hair', len(hv2), len(ht2), '%.1fs' % (time.time() - t0))
     return hv2, ht2
 
 if __name__ == '__main__':
-    if len(sys.argv) > 1 and sys.argv[1] == 'mask':
+    if script_args()[:1] == ['mask']:
         dv, polys, m = build(debug_mask=True)
         np.savez(os.path.join(HERE, 'out', 'hairmask.npz'), v=dv, q=polys, m=m)
     else:

@@ -13,3 +13,4 @@ work3d/ref/*
 !work3d/ref/mockup-sheet.jpg
 work3d/tests/shots-na2/
 work3d/tests/tmp/
+work3d/_root/

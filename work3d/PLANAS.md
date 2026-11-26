@@ -4,6 +4,15 @@ Tikslas: `ogversion.com/merch` – interaktyvus 3D puslapis. Scenoje stovi 3D ž
 
 Kiekviena fazė baigiama rezultatu, kurį savininkas pamato ir patvirtina. Į `main` (gyvą svetainę) niekas nekeliama be atskiro savininko leidimo.
 
+## Kas pasikeitė 2026-11-26 (savininko sprendimai)
+
+- Puslapyje nelieka jokio teksto, išskyrus didelį „NA2“ už figūros ir info bloką: medžiaga ir kaina kiekvienam tipui, pristatymas. Spalvai perjungti – du apvalūs taškai be teksto.
+- Marškinėliai dviejų tipų (pigesni – 220 g/m² džersis, brangesni – 370 g/m² interlokas), kiekvienas juodas ir baltas. Figūra vilki abu tipus, perjungiamus; audinio apžiūros režimas parodo, kuo jie skiriasi.
+- Prieš parduotuvę – apie 12 sekundžių kinematografinis intro (`work3d/intro/BRIEF.md`): nuo palydovo vaizdo virš Lietuvos per debesis į Šilainius, Naujakurių gatvę ir tamsiu perėjimu į marškinėlių stambų planą. Visi kadrai generuojami 4K.
+- Spaudos padarytos iš originalių failų; nugaros spauda – 29,7 cm pločio.
+
+Dėl to prie fazių prisideda: **intro** (kadrų planas ir promptai, atidarymo kadras iš tikros geografijos, grotuvas su „Praleisti intro“, montažas, prijungimas prie puslapio, ekrano įrašas) ir **tipai su audinio apžiūra** (antras marškinėlių modelis, perjungiklis, apžiūros režimas).
+
 ## 0 fazė. Perkėlimas į kompiuterį
 
 - Saugykla nuklonuojama kompiuteryje, atsidaroma šaka `claude/friendly-cori-d4z8b5`.

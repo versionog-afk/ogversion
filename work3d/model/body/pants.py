@@ -5,9 +5,11 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from common import *
 from measure import *
 
-PP = dict(M=60, y_hem=0.034, y_top=1.035, crotch_drop=0.028, leg_dy=0.0165, top_dy=0.019,
-          x_out_hip_ease=0.014, x_out_hem=0.222, x_in_hem=0.030, rz_top=0.100, rz_hem=0.100, cz_top=-0.012, cz_hem=-0.012,
-          expo=2.25, fold_amp=0.0125, clear=0.010, ease_hip=0.013, ease_waist=0.008)
+PP = dict(M=96, y_hem=0.064, y_top=1.035, crotch_drop=0.028, leg_dy=0.026, top_dy=0.022,
+          x_out_hip_ease=0.014, flare=0.004,       # outer side line: straight down from the hip (plus this much at the hem)
+          x_in_hem=0.026,                          # inner side line at the hem (gap between the legs = twice this)
+          rz_top=0.100, rz_hem=0.104, cz_top=-0.012, cz_hem=0.020,   # half depth and centre of a leg in z (drifts forward over the foot)
+          expo=2.3, fold_amp=0.011, clear=0.010, shoe_clear=0.008, ease_hip=0.013, ease_waist=0.008, hem_lip=0.004)
 
 def smoothstep(x):
     x = np.clip(x, 0, 1); return x * x * (3 - 2 * x)
@@ -59,26 +61,29 @@ def build(P, G, J, W, L, pp=PP, rng_seed=3):
     x_hip_out = L['hip']['width'] / 2 + pp['x_out_hip_ease']
     rings = []
     rs = np.random.RandomState(rng_seed); ph = rs.uniform(0, 2 * np.pi, 4)
+    sh = np.load(HERE + '/out/shoes.npz'); shoe_v = sh['v']; shoe_t = sh['t']
+    keep = (shoe_v[shoe_t][:, :, 0] > 0).all(1); shoe_t = shoe_t[keep]            # left shoe
+    y_shoe_top = float(shoe_v[:, 1].max())
     for y in ys:
         s = (y_c - y) / (y_c - pp['y_hem'])
-        x_out = x_hip_out + (pp['x_out_hem'] - x_hip_out) * s
+        x_out = x_hip_out + pp['flare'] * s
         x_in = -0.040 + (pp['x_in_hem'] + 0.040) * smoothstep(s / 0.30) ** 0.8
         cx = (x_out + x_in) / 2; rx = (x_out - x_in) / 2
         cz = pp['cz_top'] + (pp['cz_hem'] - pp['cz_top']) * s; rz = pp['rz_top'] + (pp['rz_hem'] - pp['rz_top']) * s
         n = pp['expo']
         r = (np.abs(np.cos(th) / rx) ** n + np.abs(np.sin(th) / rz) ** n) ** (-1 / n)
-        # soft vertical folds, growing towards the hem
-        A = pp['fold_amp'] * smoothstep((s - 0.08) / 0.55)
-        fold = 0.50 * np.cos(3 * th + ph[0] + 0.9 * s) + 0.35 * np.cos(5 * th + ph[1] - 1.6 * s) + 0.15 * np.cos(8 * th + ph[2] + 2.2 * s)
-        # a little break above the shoe
-        brk = 0.004 * np.exp(-((y - pp['y_hem'] - 0.05) / 0.035) ** 2) * (0.6 + 0.4 * np.cos(2 * th + ph[3]))
-        r = r + A * fold + brk
-        if y >= 0.125:
-            env = envelope(section_pts(P, legL_t, y), cx, cz)
-        else:   # below the ankle the cloth hangs straight, but it still has to clear the instep above the shoe collar
-            env = np.max([envelope(section_pts(P, legL_t, yy), cx, cz) for yy in (0.078, 0.09, 0.105, 0.125)], 0)
-        need = env_at(env, th) + pp['clear']
-        r = np.maximum(r, np.where(env_at(env, th) > 0, need, 0))
+        # a few soft vertical folds, growing towards the hem and turning slowly with the height
+        A = pp['fold_amp'] * smoothstep((s - 0.10) / 0.55)
+        fold = 0.55 * np.cos(3 * th + ph[0] + 0.9 * s) + 0.33 * np.cos(5 * th + ph[1] - 1.4 * s) + 0.12 * np.cos(7 * th + ph[2] + 1.8 * s)
+        r = r + A * fold
+        env = envelope(section_pts(P, legL_t, y), cx, cz)
+        need = np.where(env_at(env, th) > 0, env_at(env, th) + pp['clear'], 0)
+        if y < y_shoe_top + 0.03:
+            # near the hem the cloth also has to clear the shoe (its upper at this height and a little below)
+            es = np.max([envelope(section_pts(shoe_v, shoe_t, yy), cx, cz) for yy in (y - 0.005, y, y + 0.004) if yy > 0.004], 0)
+            need = np.maximum(need, np.where(env_at(es, th) > 0, env_at(es, th) + pp['shoe_clear'], 0))
+        r = np.maximum(r, circ_smooth(need, 2))
+        r = np.maximum(r, need)
         rings.append((cx, cz, r, y))
     # smooth radii along the height a little (keeps folds, removes steps from the enclosure test), then re-apply the enclosure
     R = np.array([r for _, _, r, _ in rings])
@@ -100,27 +105,6 @@ def build(P, G, J, W, L, pp=PP, rng_seed=3):
     for j in range(1, len(ys)):
         Lr[j, :, 0] = np.maximum(Lr[j, :, 0], gap[j])
     nL = len(ys)
-    # ---- the hem breaks on the shoe: lift each column so that its lower end sits on the shoe upper
-    sh = np.load(HERE + '/out/shoes.npz')['v']; sh = sh[sh[:, 0] > 0]
-    cell = 0.004; ox, oz = sh[:, 0].min() - 0.02, sh[:, 2].min() - 0.02
-    nxg = int((sh[:, 0].max() + 0.02 - ox) / cell) + 1; nzg = int((sh[:, 2].max() + 0.02 - oz) / cell) + 1
-    H = np.zeros((nxg, nzg)); np.maximum.at(H, (((sh[:, 0] - ox) / cell).astype(int), ((sh[:, 2] - oz) / cell).astype(int)), sh[:, 1])
-    for _ in range(2):
-        Hp = np.pad(H, 1); H = np.max([Hp[1:-1, 1:-1], Hp[:-2, 1:-1], Hp[2:, 1:-1], Hp[1:-1, :-2], Hp[1:-1, 2:]], 0)
-    def shoe_h(x, z):
-        i = ((x - ox) / cell).astype(int); k = ((z - oz) / cell).astype(int)
-        ok = (i >= 0) & (i < nxg) & (k >= 0) & (k < nzg)
-        out = np.zeros(len(x)); out[ok] = H[i[ok], k[ok]]; return out
-    y_ref = 0.36
-    lowj = [j for j in range(nL) if ys[j] < 0.12]
-    hk = np.max([shoe_h(Lr[j, :, 0], Lr[j, :, 2]) for j in lowj], 0)
-    hk = np.maximum(pp['y_hem'], np.where(hk > 0, hk + 0.005, 0))
-    hs = hk.copy()
-    for _ in range(3):
-        hs = np.maximum(hk, 0.25 * np.roll(hs, 1) + 0.5 * hs + 0.25 * np.roll(hs, -1))
-    for j in range(nL):
-        if ys[j] < y_ref:
-            Lr[j, :, 1] = hs + (ys[j] - pp['y_hem']) * (y_ref - hs) / (y_ref - pp['y_hem'])
     # ---- indexing
     verts = []; idx_L = np.zeros((nL, M), int); idx_R = np.zeros((nL, M), int)
     def add(p):
@@ -138,6 +122,19 @@ def build(P, G, J, W, L, pp=PP, rng_seed=3):
             k2 = (k + 1) % M
             quads.append([idx_L[j, k], idx_L[j, k2], idx_L[j + 1, k2], idx_L[j + 1, k]])
             quads.append([idx_R[j, k], idx_R[j + 1, k], idx_R[j + 1, k2], idx_R[j, k2]])
+    # the hem is turned in by a few millimetres, so that the edge reads as thick cloth
+    lip_L = idx_L[-1].copy(); lip_R = idx_R[-1].copy()
+    if pp.get('hem_lip', 0) > 0:
+        cxh, czh = rings[-1][0], rings[-1][1]
+        lip_L = np.zeros(M, int); lip_R = np.zeros(M, int)
+        for k in range(M):
+            p = Lr[-1, k].copy(); dirn = np.array([p[0] - cxh, 0.0, p[2] - czh]); dirn /= np.linalg.norm(dirn)
+            p = p - dirn * pp['hem_lip']; p[1] += 0.0015
+            lip_L[k] = add(p); lip_R[k] = add(p * [-1, 1, 1])
+        for k in range(M):
+            k2 = (k + 1) % M
+            quads.append([idx_L[-1, k], idx_L[-1, k2], lip_L[k2], lip_L[k]])
+            quads.append([idx_R[-1, k], lip_R[k], lip_R[k2], idx_R[-1, k2]])
     # ---- pelvis tube
     outer_front = list(range(0, ka)); outer_back = list(range(kb + 1, M))
     ring0 = [idx_L[0, k] for k in outer_front] + [idx_L[0, ka]] + [idx_R[0, k] for k in outer_front[::-1]] + [idx_R[0, k] for k in outer_back[::-1]] + [idx_L[0, kb]] + [idx_L[0, k] for k in outer_back]
@@ -167,7 +164,7 @@ def build(P, G, J, W, L, pp=PP, rng_seed=3):
             quads.append([prev[i], cur[i], cur[i2], prev[i2]])
         prev = cur; rings_top.append(cur)
     V = np.array(verts); Q = np.array(quads)
-    info = dict(y_crotch=float(y_c), y_top=float(pp['y_top']), y_hem=float(pp['y_hem']), hem_L=idx_L[-1].tolist(), hem_R=idx_R[-1].tolist(), top=prev,
+    info = dict(y_crotch=float(y_c), y_top=float(pp['y_top']), y_hem=float(pp['y_hem']), hem_L=[int(i) for i in lip_L], hem_R=[int(i) for i in lip_R], top=prev,
                 x_out_hip=float(x_hip_out))
     return V, Q, info
 

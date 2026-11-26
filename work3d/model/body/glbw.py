@@ -74,9 +74,9 @@ class GLB:
         while len(self.bin) % 4:
             self.bin.append(0)
         doc = {
-            "asset": {"version": "2.0", "generator": "teegen (procedural, Blender cloth)"},
+            "asset": {"version": "2.0", "generator": "NA2 model scripts (procedural)"},
             "scene": 0,
-            "scenes": [{"name": "Tee", "nodes": list(range(len(self.nodes)))}],
+            "scenes": [{"name": "NA2", "nodes": list(range(len(self.nodes)))}],
             "nodes": self.nodes,
             "meshes": self.meshes,
             "materials": self.materials,

@@ -9,7 +9,11 @@ CFG = dict(female=0.85, slim=0.45, lowmuscle=0.25, cup=-0.6,
            extra=[('expression/units/caucasian/eye-left-closure', 0.42), ('expression/units/caucasian/eye-right-closure', 0.42)],   # calm, lowered lids
            arm_abduction=16.0,             # final angle of the upper arm from vertical, degrees
            elbow_flex=14.0,                # final elbow bend
-           leg_in=2.6,                     # each leg rotated inwards by this
+           leg_in=4.4,                     # each leg rotated inwards by this (ankles end up about 0.23 m apart)
+           thumb_adduct=0.75,              # share of the rest angle between thumb and index finger that is closed
+           thumb_palmar=0.7,              # how far in front of the palm the closed thumb aims (0 = straight at the index finger)
+           thumb_curl=(6.0, 10.0, 12.0),   # flexion of the three thumb bones
+           neck_back=6.0,                  # degrees the neck is straightened by (the head is turned back by the same, so the face stays level)
            body_height=1.652, sole=0.016, zshift=-0.030)
 
 def expr(unit, w):
@@ -60,15 +64,27 @@ def build(cfg=CFG, verbose=True, arm_t=1.0, frame=None):
                     sgn_ang = np.degrees(np.arctan2(np.cross(dp, mp_) @ npalm, dp @ mp_))
                     R = R @ rot(npalm, cfg.get('finger_close', 0.55) * sgn_ang)
                 pose[b] = R
-        # thumb: slight curl
-        for j, a in zip((2, 3), (8, 10)):
+        # thumb: the base mesh holds it wide open; bring it next to the index finger (relaxed hand), then a slight curl
+        tdir = rig.tail('finger1-3.' + side) - rig.head('finger1-1.' + side); tdir /= np.linalg.norm(tdir)
+        idir = rig.tail('finger2-1.' + side) - rig.head('metacarpal1.' + side); idir /= np.linalg.norm(idir)
+        idir = idir + cfg.get('thumb_palmar', 0.0) * npalm; idir /= np.linalg.norm(idir)   # aim a little in front of the palm, not into its edge
+        axt = np.cross(tdir, idir); open_ang = np.degrees(np.arcsin(np.clip(np.linalg.norm(axt), 0, 1))); axt /= np.linalg.norm(axt)
+        Rt = rot(axt, cfg.get('thumb_adduct', 0.0) * open_ang)
+        if verbose: print(side, 'thumb opening at rest %.1f deg' % open_ang)
+        for j, a in zip((1, 2, 3), cfg.get('thumb_curl', (0, 8, 10))):
             b = 'finger1-%d.%s' % (j, side)
             dd = rig.tail(b) - rig.head(b); dd /= np.linalg.norm(dd)
-            axf = np.cross(dd, npalm); axf /= np.linalg.norm(axf)
-            pose[b] = rot(axf, a)
+            # the thumb flexes across the palm (towards the little-finger side) and a little into it
+            target = -0.8 * width / np.linalg.norm(width) + 0.45 * npalm
+            axf = np.cross(dd, target); axf /= np.linalg.norm(axf)
+            pose[b] = (Rt @ rot(axf, a)) if j == 1 else rot(axf, a)
         # legs a little closer
         pose['upperleg01.' + side] = rot(Z, -sx * -cfg['leg_in'] * -1.0)
         pose['foot.' + side] = rot(Z, sx * -cfg['leg_in'] * -1.0)
+    # posture: the base mesh carries the head a little forward; bring it back over the shoulders and keep the face level
+    X = np.array([1.0, 0, 0]); nk = cfg.get('neck_back', 0.0)
+    if nk:
+        pose['neck01'] = rot(X, -0.6 * nk); pose['neck02'] = rot(X, -0.4 * nk); pose['head'] = rot(X, nk)
     Vp, joint, Gm, has = skin(V1, rig, pose, W)
     # corrective smoothing where the arm blends into the torso (shoulder cap, armpit folds)
     n = len(V1); wa = np.zeros(n)
@@ -83,6 +99,15 @@ def build(cfg=CFG, verbose=True, arm_t=1.0, frame=None):
     for _ in range(cfg.get('corrective_iters', 3)):
         avg = np.array([Vp[nb[i]].mean(0) for i in idx])
         Vp[idx] += 0.5 * mask[idx, None] * (avg - Vp[idx])
+    # the same for the web between thumb and index finger, which folds when the thumb closes
+    wt = np.zeros(n)
+    for b, (i, x) in W.items():
+        if b.startswith('finger1-'): np.add.at(wt, i, x)
+    maskt = np.clip(4 * wt * (1 - wt), 0, 1) * (1.0 if cfg.get('thumb_adduct', 0) > 0 else 0.0)
+    idx = np.array([i for i in np.where(maskt > 0.02)[0] if nb[i]], dtype=np.int64)
+    for _ in range(cfg.get('thumb_web_iters', 4) if len(idx) else 0):
+        avg = np.array([Vp[nb[i]].mean(0) for i in idx])
+        Vp[idx] += 0.6 * maskt[idx, None] * (avg - Vp[idx])
     # to metres, feet on the sole plane
     bi = np.unique(G['body'])
     h = Vp[bi, 1].max() - Vp[bi, 1].min()

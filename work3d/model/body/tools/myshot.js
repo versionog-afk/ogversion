@@ -1,8 +1,9 @@
 // Usage: node myshot.js <model.glb> <out.png> <look> <views-json> [tile]
 // views-json: [[label, tx,ty,tz, yaw, el, dist], ...]  -> one contact sheet
 const http = require('http'), fs = require('fs'), path = require('path');
-const { chromium } = require('/opt/node-tools/node_modules/playwright');
-const ROOT = require('path').resolve(__dirname, '../../../..'); // repository root
+// ROOT: the only machine-specific path here (the folder that holds na2/ and v3/node_modules/three). Override with NA2_ROOT.
+const ROOT = process.env.NA2_ROOT || require('path').resolve(__dirname, '../../../_root');
+const { chromium } = require('playwright');
 const MIME = { '.html': 'text/html', '.js': 'text/javascript', '.glb': 'model/gltf-binary', '.png': 'image/png', '.jpg': 'image/jpeg', '.json': 'application/json', '.wasm': 'application/wasm' };
 const rel = p => '/' + path.relative(ROOT, path.resolve(p));
 (async () => {
@@ -18,7 +19,7 @@ const rel = p => '/' + path.relative(ROOT, path.resolve(p));
   const b = await chromium.launch();
   const p = await b.newPage({ viewport: { width: T, height: T }, deviceScaleFactor: 1 });
   const errs = []; p.on('console', m => { if (m.type() === 'error') errs.push(m.text()); }); p.on('pageerror', e => errs.push(e.message));
-  await p.goto(base + '/model/body/tools/myview.html?model=' + encodeURIComponent(rel(model)));
+  await p.goto(base + rel(path.join(__dirname, 'myview.html')) + '?model=' + encodeURIComponent(rel(model)));
   await p.waitForFunction(() => window.__ready, { timeout: 240000 });
   const e2 = await p.evaluate(() => window.__errors); if (errs.length || e2.length) console.log('errors', errs, e2);
   const imgs = [];

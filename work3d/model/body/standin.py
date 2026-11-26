@@ -9,7 +9,7 @@ from glbw import GLB, angle_weighted_normals
 
 EXP = 2.7
 def make(out_path):
-    cut = dict(A.CUT); cut.update(neck_keep_radius=0.082, neck_keep_depth=0.028, arm_keep_from_joint=0.09)
+    cut = dict(A.CUT); cut.update(neck_keep_radius=0.082, neck_keep_depth=0.028, arm_keep_from_joint=0.185)   # skin starts 2.5 cm inside the stand-in sleeves
     A.CUT.update(cut)
     meshes, L, full, pants = A.figure_meshes()
     nb = L['neck_base']; ncy = nb['center'][1]; ncz = nb['center'][2]
@@ -70,5 +70,5 @@ def make(out_path):
     return g.write(out_path)
 
 if __name__ == '__main__':
-    out = sys.argv[1] if len(sys.argv) > 1 else HERE + '/out/standin.glb'
+    out = script_args()[0] if script_args() else HERE + '/out/standin.glb'
     print('standin bytes', make(out), out)

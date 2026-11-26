@@ -39,24 +39,38 @@ PORT=8361 node tests/shots-na2.js 390x664     # storyboard screenshots into test
 | `art/` | print textures the build reads (`front.png` 3:2, `back.png` 3:4, `meta.json`) and `make_textures.py`, which builds them from the owner's original artwork |
 | `ref/` | owner's originals; mostly local-only |
 | `research/` | notes on tools found on GitHub, with licences and hardware needs |
+| `intro/` | the cinematic intro: the owner's brief, the shot plan and prompts, the opening frame, the edit; `intro/ref/` holds the game frames and is local only |
 | `out/`, `ext/`, `fonts/` | local outputs and downloads, not in git |
 
 Scripts in `model/` were written for one fixed directory layout and then path-mapped to this one; they are meant to be run from the repository root and may need small path fixes. `model/body/common.py` expects the CC0 human base mesh at `work3d/ext/makehuman` (`git clone --depth 1 https://github.com/makehumancommunity/makehuman work3d/ext/makehuman`). Blender scripts need Python with `bpy` (Blender's own Python, or `pip install bpy`); set `BLENDER_PY` to that interpreter.
 
-## State when the work moved
+## State on 2026-11-26, 13:00 UTC
 
-Works (seen in screenshots, not yet reviewed independently):
+Decisions the owner made after the first version of this file (the sources are `spec/OWNER-FACTS.md` and `intro/BRIEF.md`; where older text in the spec disagrees, they win until the spec is updated):
 
-- Build pipeline with budgets; two-mode document (flat page and 3D page); loader line; gate; first paint without JavaScript.
-- Scene: „NA2“ sign behind a transparent canvas, plaster figure, black shirt, trousers fading into the dark, both prints, lit copy of the back print, red line under the caption.
-- Spin with inertia and front / back detents; the scroll story from the hero to the figure standing beside the rail; „Šviesa“, „Priekis“, „Nugara“, „Iš arti“.
+- No visible text on the page except the giant „NA2“ behind the figure and one info block (material and price per shirt type, shipping). Two round colour swatches without text.
+- Two shirt types, each in black and in white: a lighter, cheaper one (220 g/m² jersey) and a heavier, more expensive one (370 g/m² interlock). The figure wears both, switchable. A material view ("inspect") shows how the two differ, from the owner's text.
+- A cinematic intro of about 12 seconds plays before the shop (`intro/BRIEF.md`), generated at 4K for every shot; the workspace of the generation service is on a paid plan since that day.
+- The prints are built from the owner's original artwork (done: `art/`).
 
-Unfinished or unverified:
+Done and in the repository: the page core (sign, figure, spin, camera walk, lights-out beat, static fallback), the build with budgets, both print textures, the figure (body, hair, trousers, shoes: `model/body/`, also as an MPFB2 recipe in `model/mpfb/`), the research notes, the merged spec.
 
-- The page builder was interrupted before its own verification finished: the interaction tests (`tests/test-int-na2.js`) and the layout sweep across viewports have not been run to the end, and the fallback tests (static mode, blocked files, timeout, no WebGL) still have to be written for this layout. Start there.
-- The rack (nine photo panels, flick, tap to lightbox), the quality governor, context-loss recovery, calm mode with „Įjungti 3D“ and the opaque escape hatch are not built (`merch/v/src/rack.js` is a stub with the seam documented at the top).
-- Model: only the body stage ran (figure, hair, trousers, shoes). The oversized shirt has not been simulated; the shirt in `current.glb` is a crude shell.
-- Prints: done. `art/front.png` and `art/back.png` are built from the owner's original artwork by `art/make_textures.py` (the originals are in `ref/originals/`, local only). The back canvas is 3:4 with the artwork top-aligned at its true proportions, so the band under the caption is empty; `art/meta.json` holds the boxes of the artwork, the map and the caption. Ask the owner how wide the back print really is in centimetres.
+In flight in the cloud session when this was written. Their results arrive as commits on this branch, so pull before touching the same files:
+
+1. The page without text (`merch/index.html`, `merch/v/src/`, `spec/SPEC.md`, `spec/CONTENT-RULES.md`, `tests/`): first stage running; then the rack of photos and the robustness features, a four-lens review and fixes.
+2. The lighter shirt on the figure: sewing pattern, Blender cloth drape, decals, bake. Not in the repository yet; `model/current.glb` still carries a crude shirt shell.
+3. The intro: shot plan and prompts (`intro/shots.json`, `intro/PROMPTS.md`), the opening frame from real geography with a code-rendered first shot (`intro/src/opening/`), the intro player (`merch/v/intro/`), the timed animatic edit (`intro/edit/`).
+
+Not started:
+
+- The heavier shirt (its pictures are `ref/shirt-heavy-*.png`), then the type switch and the material view on the page.
+- Wiring the intro into the page and the screen recording the brief asks for.
+- Generating the intro footage: it needs the four game frames in `intro/ref/`, which exist only on the owner's computer.
+- The info block's values: prices and shipping have not been supplied.
+
+What only the owner's computer can do, and where a local session should start: put the four game frames and the camera notes into `work3d/intro/ref/`; generate the intro shots as `intro/BRIEF.md` and `intro/PROMPTS.md` say (the street descent from frame 02 to frame 03 first); look at the page on a real GPU and on real phones; use Blender with a window; capture the street move in the game engine if the generator loses the street layout.
+
+The model scripts expect one fixed directory layout; `model/make_root.sh` builds it from this repository's folders.
 
 ## House rules
 

@@ -66,6 +66,21 @@ def components_at(P, tris, y):
         comps.setdefault(find(k), []).append(pts[k])
     return [np.array(v) for v in comps.values()]
 
+def hull_perimeter(xy):
+    """tape-measure length around a set of 2D points (convex hull, monotone chain)"""
+    p = np.unique(np.round(np.asarray(xy, float), 6), axis=0)
+    if len(p) < 3: return 0.0
+    p = p[np.lexsort((p[:, 1], p[:, 0]))]
+    def half(pts):
+        h = []
+        for q in pts:
+            while len(h) >= 2 and (h[-1][0] - h[-2][0]) * (q[1] - h[-2][1]) - (h[-1][1] - h[-2][1]) * (q[0] - h[-2][0]) <= 0: h.pop()
+            h.append(q)
+        return h
+    hull = half(p)[:-1] + half(p[::-1])[:-1]
+    hull = np.array(hull)
+    return float(np.linalg.norm(hull - np.roll(hull, -1, 0), axis=1).sum())
+
 def masks(P, G, W):
     n = len(P)
     body = np.zeros(n, bool); body[np.unique(G['body'])] = True
@@ -151,7 +166,7 @@ def landmarks(P, G, J, W):
     L['armpit_L'] = ap.tolist(); L['armpit_R'] = (ap * [-1, 1, 1]).tolist()
     # neck base: tilted plane through the pit of the neck (front) and the base of the neck at the back (C7)
     pm = {p['y']: p for p in prof}
-    yf = 1.385 * 1.0; yb = yf + 0.030
+    yf = float(J['neck01'][0][1]) - 0.029; yb = yf + 0.030      # pit of the neck sits 29 mm below the first neck joint on this mesh
     F = np.array([0, yf, np.interp(yf, [p['y'] for p in prof if p['z_front_mid'] is not None], [p['z_front_mid'] for p in prof if p['z_front_mid'] is not None])])
     Bk = np.array([0, yb, np.interp(yb, [p['y'] for p in prof if p['z_back_mid'] is not None], [p['z_back_mid'] for p in prof if p['z_back_mid'] is not None])])
     t = Bk - F; nrm = np.array([0, -t[2], t[1]]); nrm /= np.linalg.norm(nrm)
@@ -159,9 +174,12 @@ def landmarks(P, G, J, W):
     c = cut(P, te, nrm, nrm @ F)
     c = c[np.abs(c[:, 0]) < 0.13]
     cen = (F + Bk) / 2
+    ex = np.array([1.0, 0, 0]); ez = np.cross(ex, nrm); c0_neck = np.stack([(c - cen) @ ex, (c - cen) @ ez], 1)
+    order = np.argsort(np.arctan2(c0_neck[:, 1], c0_neck[:, 0])); loop = c[order][::max(1, len(c) // 32)]
     sidez = c[np.argmax(c[:, 0])]
     L['neck_base'] = dict(center=cen.tolist(), plane_normal=nrm.tolist(), front=F.tolist(), back=Bk.tolist(),
                           radius_mean=float(np.linalg.norm(c - cen, axis=1).mean()), radius_x=float(np.abs(c[:, 0]).max()), radius_z=float(np.linalg.norm(Bk - F) / 2),
+                          loop=np.round(loop, 4).tolist(),
                           note='plane through the pit of the neck and the base of the back of the neck; the cross-section includes the trapezius slopes, so radius_x is the width at shoulder-line level')
     for nm, yy in (('neck_column_low', 1.43), ('neck_column_mid', 1.455)):
         c = cut(P, te, (0, 1, 0), yy)
@@ -199,6 +217,28 @@ def landmarks(P, G, J, W):
         tab.append(dict(y=round(float(y), 3), arm_x_inner=float(c[:, 0].min()), arm_x_outer=float(c[:, 0].max()), arm_z_back=float(c[:, 2].min()), arm_z_front=float(c[:, 2].max()),
                         torso_half_width=float(np.abs(t[:, 0]).max()) if len(t) else None))
     L['arm_L_sections'] = tab
+    # tape measures (convex girths of the body without the arms) and lengths, for pattern making
+    def girth(y): return hull_perimeter(cut(P, te, (0, 1, 0), y)[:, [0, 2]])
+    gy = {p['y']: girth(p['y']) for p in prof if 0.80 <= p['y'] <= 1.32}
+    L['girths'] = dict(chest=girth(L['chest_front']['point'][1]), waist=girth(L['waist']['y']),
+                       hip=max(v for y, v in gy.items() if y <= 0.96), hip_y=max((v, y) for y, v in gy.items() if y <= 0.96)[1],
+                       neck_base=hull_perimeter(c0_neck), note='metres; tape-measure girths of the bare body (no ease)')
+    armq2 = edges_of(q[(M['warm_only'][q] >= 0.5).all(1) & (P[q][:, :, 0] > 0).all(1)])
+    sh, el, wr = [np.array(L[k + '_L']) for k in ('shoulder_joint', 'elbow', 'wrist')]
+    def arm_girth(c, axis):
+        pts = cut(P, armq2, axis, axis @ c); pts = pts[np.linalg.norm(pts - c, axis=1) < 0.09]
+        u = np.cross(axis, [0, 0, 1.0]); u /= np.linalg.norm(u); w = np.cross(axis, u)
+        return hull_perimeter(np.stack([pts @ u, pts @ w], 1))
+    ua = (el - sh) / np.linalg.norm(el - sh); fa = (wr - el) / np.linalg.norm(wr - el)
+    L['arm'] = dict(upper_arm_length=float(np.linalg.norm(el - sh)), forearm_length=float(np.linalg.norm(wr - el)),
+                    shoulder_point_to_elbow=float(np.linalg.norm(el - np.array(L['shoulder_point_L']))),
+                    upper_arm_girth=arm_girth((sh + el) / 2, ua), elbow_girth=arm_girth(el, (ua + fa) / np.linalg.norm(ua + fa)),
+                    wrist_girth=arm_girth(wr, fa), upper_arm_axis_L=ua.tolist(), forearm_axis_L=fa.tolist())
+    nbk = np.array(L['neck_base']['back'])
+    L['lengths'] = dict(back_neck_to_waist=float(nbk[1] - L['waist']['y']), back_neck_to_hip=float(nbk[1] - L['hip']['y']),
+                        back_neck_to_crotch=float(nbk[1] - L['crotch_height']), back_neck_to_floor=float(nbk[1]),
+                        side_neck_to_shoulder_point=float(np.linalg.norm(np.array(L['side_neck_L']) - np.array(L['shoulder_point_L']))),
+                        across_back_at_armpit_height=float(2 * np.interp(L['armpit_L'][1], [p['y'] for p in prof], [p['half_width'] for p in prof])))
     L['notes'] = {'acromion': 'surface point straight above the shoulder joint', 'shoulder_point': 'where the front silhouette of the shoulder turns 45 degrees down into the arm',
                   'armpit': 'highest point of the gap between arm and torso', 'side_neck': 'on the shoulder ridge 12 mm outside the neck column',
                   'torso_profile': 'cross-sections every 1 cm of the body without the arms (legs included below the crotch)'}

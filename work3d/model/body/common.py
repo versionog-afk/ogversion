@@ -2,10 +2,25 @@
 import os, json
 import numpy as np
 
-S = 'work3d'  # run from the repository root
-MH = S + '/ext/makehuman/makehuman/data'
+# ---------------------------------------------------------------------------------------------------------------
+# ROOT: the only machine-specific path of the Python scripts. It is the folder that holds
+#   ext/makehuman/   (a checkout of the MakeHuman repository: CC0 base mesh, targets, rig)   and   na2/   (this project).
+# Change it here, or set the environment variable NA2_ROOT (build.sh does that for every step).
+ROOT = os.environ.get('NA2_ROOT') or os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..', '_root'))  # see ../README.md
+# ---------------------------------------------------------------------------------------------------------------
+S = ROOT
+MH = os.environ.get('NA2_MAKEHUMAN') or (ROOT + '/ext/makehuman/makehuman/data')
 HERE = os.path.dirname(os.path.abspath(__file__))
-MODEL = S + '/model'
+MODEL = os.path.dirname(HERE)
+
+
+def script_args():
+    """command line arguments of the script, also when it is run as  blender --background --python script.py -- args"""
+    import sys
+    a = sys.argv
+    if '--' in a: return a[a.index('--') + 1:]
+    if any(x in ('--python', '-P', '--background', '-b') for x in a[1:]): return []
+    return a[1:]
 
 
 def load_base():
@@ -119,3 +134,35 @@ def uv_sphere(c, r, nu=16, nv=10):
     n = tri_normals(vs, t); cen = vs[t].mean(1) - np.asarray(c)
     if (n * cen).sum() < 0: t = t[:, ::-1]
     return vs, t
+
+
+def clip_tris(v, n, tris, h):
+    """cut a triangle mesh along the zero level of the per-vertex field h and keep the part with h < 0.
+    New vertices are created on the crossed edges (shared between neighbours), so the border is a clean curve.
+    returns verts, normals, tris"""
+    v = np.asarray(v); n = np.asarray(n); tris = np.asarray(tris); h = np.asarray(h, float)
+    keep = h < 0
+    k = keep[tris]; cnt = k.sum(1)
+    out_t = [tris[cnt == 3]]
+    new_v = []; new_n = []; cache = {}; base = len(v)
+    def cut(a, b):          # a kept, b hidden
+        key = (a, b)
+        if key not in cache:
+            t = h[a] / (h[a] - h[b]); t = min(max(t, 0.02), 0.98)
+            cache[key] = base + len(new_v)
+            new_v.append(v[a] + t * (v[b] - v[a])); nn = n[a] + t * (n[b] - n[a]); new_n.append(nn / max(np.linalg.norm(nn), 1e-20))
+        return cache[key]
+    extra = []
+    for tri, kk in zip(tris[(cnt == 1) | (cnt == 2)], k[(cnt == 1) | (cnt == 2)]):
+        tri = [int(x) for x in tri]
+        if kk.sum() == 1:
+            i = int(np.argmax(kk)); a, b, c = tri[i], tri[(i + 1) % 3], tri[(i + 2) % 3]
+            extra.append([a, cut(a, b), cut(a, c)])
+        else:
+            i = int(np.argmin(kk)); c, a, b = tri[i], tri[(i + 1) % 3], tri[(i + 2) % 3]       # c hidden, a and b kept (order a, b, c keeps the winding)
+            ac = cut(a, c); bc = cut(b, c)
+            extra.append([a, b, bc]); extra.append([a, bc, ac])
+    allv = np.concatenate([v, np.array(new_v).reshape(-1, 3)]); alln = np.concatenate([n, np.array(new_n).reshape(-1, 3)])
+    allt = np.concatenate([out_t[0], np.array(extra, dtype=np.int64).reshape(-1, 3)])
+    vv, tt, used = compact(allv, allt)
+    return vv, alln[used], tt

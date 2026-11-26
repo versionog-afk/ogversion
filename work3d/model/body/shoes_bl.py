@@ -8,7 +8,7 @@ import bpy
 from mathutils.bvhtree import BVHTree
 from hair_bl import surface_nets, mesh_obj, to_np, smin, smax, smoothstep
 
-SP = dict(h=0.002, offset=0.0065, blur=3, collar=0.086, collar_slope=0.10, sole=0.021, welt=0.0035, target_tris=2800)
+SP = dict(h=0.002, offset=0.0065, blur=3, collar=0.086, collar_slope=0.10, sole=0.021, welt=0.0035, target_tris=2500)
 
 def box_blur(f, r, passes=3):
     for _ in range(passes):
