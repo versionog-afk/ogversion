@@ -125,7 +125,7 @@ export const CFG = {
      so that folds keep their shading and nothing clips.
      Spec for the black tee: colour 0x0e0e10, rim 8.0 with power 3.0 and no base gain; tuned on renders (see LIGHT). */
   CLOTH: { color: 0x16161a, roughness: 0.9, base: 2.0, rim: 16.0, rimPow: 2.0, sheen: 1, sheenRoughness: 0.75, sheenColor: 0x2a2a30 },
-  CLOTH_WHITE: { color: 0xecebe6, base: -0.2, rim: 0.3, rimPow: 2.0 },
+  CLOTH_WHITE: { color: 0xecebe6, base: 0.3, rim: 0.3, rimPow: 2.0 },
   PANTS: { color: 0x2b2a28, roughness: 0.9, base: 1.0, rim: 8.0, rimPow: 2.2, sheen: 0.6, sheenRoughness: 0.75, sheenColor: 0x3a3832 },
   SHOES: { color: 0x121213, roughness: 0.55 },
   PLASTER: { color: 0xd6cfc3, roughness: 0.62, hairDarker: 0.12 },
