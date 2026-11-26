@@ -41,8 +41,14 @@ Unisex oversized t-shirt 220 g/m²
 
 ## Shirt reference
 
-- The cut is the one in `work3d/ref/shirt-black-front.png` (the owner's picture, with the custom label inside the neck: black, with the „NA2“ mark in white). Earlier pictures of a different, shorter blank shirt were withdrawn by the owner on 2026-11-26: do not use them.
+- Lighter (cheaper) type: the cut is the one in `work3d/ref/shirt-black-front.png` and `work3d/ref/shirt-white-front.png` (the owner's pictures of both colours laid flat, each with the custom label inside the neck: the „NA2“ mark, white on the black shirt and black on the white one).
+- Heavier (more expensive) type: pictures with the custom label are still to come from the owner. Earlier pictures of a shorter blank shirt were withdrawn by the owner on 2026-11-26: do not use them.
 - Label artwork as a file: not supplied yet.
+
+## Decisions by the owner (2026-11-26)
+
+- No text on the page except the giant „NA2“ behind the figure and the info block (material, price, shipping).
+- The 3D figure wears both shirt types, switchable, each in black and in white.
 
 ## Not supplied yet
 
@@ -51,3 +57,4 @@ Unisex oversized t-shirt 220 g/m²
 - Prices of the two types (and whether the colour changes the price).
 - Shipping: where, how long, what it costs.
 - Tape measurements of the shirts.
+- Pictures of the heavier type with its label.
