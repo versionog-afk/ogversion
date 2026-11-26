@@ -15,11 +15,11 @@ export const stage = {
   f: 1,              // focal length in CSS px
   fov: 40, portrait: true, coarse: false, dpr: 1,
   fadeUntil: 0,      // performance.now() until which a canvas fade is running
-  rect: {},          // frame rects by name: hero, print, item; sw is the row of colour swatches
+  rect: {},          // frame rects by name: hero, print, side, item; sw is the row of colour swatches
   nRest: null        // rest rect of the sign (no transform)
 };
 
-const FRAMES = { hero: '.fr-hero', print: '.fr-print', item: '.fr-item', sw: '.sw' };
+const FRAMES = { hero: '.fr-hero', print: '.fr-print', side: '.fr-side', item: '.fr-item', sw: '.sw' };
 
 /* Creates the WebGL2 context and the renderer. Returns false when the
    browser cannot give us a context (the caller falls back to the static page). */

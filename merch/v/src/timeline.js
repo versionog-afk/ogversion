@@ -91,9 +91,10 @@ export function layout() {
   P.chest = makePose(pfC, tl.dChest, Q.CHEST, R.print);
   P.chest2 = makePose(pfC, tl.dChest, Q.CHEST_END, R.print);
 
-  const dSide = fitDistance(wide(top3, Q.SIDE.az), top3.y, R.print);
-  P.side = makePose(w.C, dSide, Q.SIDE, R.print);
-  P.side2 = makePose(w.C, dSide, Q.SIDE2, R.print);
+  /* from the side: head to hem, in a frame that keeps the hem clear of the colour swatches */
+  const dSide = fitDistance(wide(top3, Q.SIDE.az), top3.y, R.side);
+  P.side = makePose(w.C, dSide, Q.SIDE, R.side);
+  P.side2 = makePose(w.C, dSide, Q.SIDE2, R.side);
 
   /* the back: the artwork (map and caption) with a margin; then, for the
      dark beat, closer: the artwork and the red line under its caption fill

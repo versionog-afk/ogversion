@@ -126,19 +126,20 @@ h1 .n{text-decoration-thickness:.035em;text-underline-offset:.06em}
 html.gl .os{display:none}
 html.gl .o3{display:block}
 html.gl{
-  /* --u: the unit of the hero cluster. The giant NA2 is 88u wide; the figure's slot starts 23u below its top
-     and is 80u high, so the cluster is 103u high. --cx / --ct: its centre line and its top. The row of colour
+  /* --u: the unit of the hero cluster. The giant NA2 is 88u wide; the figure's slot starts 15u below its top
+     and is 86u high, so the cluster is 101u high. --cx / --ct: its centre line and its top. The row of colour
      swatches keeps the 68 px above the bottom safe area. */
-  --u:min(1vw,calc((var(--vh) - 96px - var(--st) - var(--sb))/103));
+  --u:min(1vw,calc((var(--vh) - 96px - var(--st) - var(--sb))/101));
   --cx:50vw;
-  --ct:calc(var(--st) + max(14px,(var(--vh) - var(--st) - var(--sb) - 68px - 103*var(--u))/2));
+  --ct:calc(var(--st) + max(14px,(var(--vh) - var(--st) - var(--sb) - 68px - 101*var(--u))/2));
 }
 html.gl main{touch-action:pan-y pinch-zoom}
 
 /* The story is a column of blocks in normal flow above a stage pinned to the viewport: #hero and #stovas are
    transparent stretches of scroll, #info is the one solid plate, the grid closes the page. */
 html.gl .hero{display:block;height:calc(var(--vh)*3.7)}
-html.gl #stovas{height:calc(var(--vh)*2.75)}
+/* #stovas ends after the figure-as-item beat for now; with the nine photo panels on the rail it is 2.75 screens */
+html.gl #stovas{height:calc(var(--vh)*1.35)}
 html.gl .win,html.gl .info,html.gl .blk{position:relative;z-index:1}
 html.gl .blk{background:#000}
 .stage{display:contents}
@@ -157,15 +158,18 @@ html.gl.n-off h1 .n{visibility:hidden}
 
 /* frames: empty boxes the script reads; the camera puts its subjects into them */
 html.gl .fr{position:absolute;z-index:2;visibility:hidden;pointer-events:none}
-.fr-hero{left:calc(var(--cx) - 33*var(--u));top:calc(var(--ct) + 23*var(--u));width:calc(66*var(--u));height:calc(80*var(--u))}
+.fr-hero{left:calc(var(--cx) - 33*var(--u));top:calc(var(--ct) + 15*var(--u));width:calc(66*var(--u));height:calc(86*var(--u))}
 .fr-print{left:4vw;right:4vw;top:calc(var(--st) + var(--vh)*.05);bottom:calc(var(--sb) + 84px)}
-.fr-item{left:11vw;right:11vw;top:calc(var(--st) + var(--vh)*.09);height:calc(var(--vh)*.6)}
+.fr-side{left:4vw;right:4vw;top:calc(var(--st) + var(--vh)*.05);bottom:calc(var(--sb) + 128px)}
+.fr-item{left:11vw;right:11vw;top:calc(var(--st) + var(--vh)*.09);height:calc(var(--vh)*.68)}
 /* keyboard focus on the hidden range input shows as a ring round the figure */
 html.gl.kf:not(.ui-off) .fr-hero{visibility:visible;outline:2px solid var(--bone);outline-offset:-2px}
 
-/* colour swatches: two dots, no words, at the bottom centre of the stage. The pressed one carries a ring. */
+/* colour swatches: two dots, no words, at the bottom centre of the stage. The pressed one carries a ring.
+   Behind them the foot of the stage sinks into black, so the dots never sit on the trousers. */
 .sw{position:absolute;z-index:2;left:50%;bottom:calc(var(--sb) + 12px);transform:translateX(-50%);opacity:0;visibility:hidden;transition:opacity .18s linear,visibility 0s linear .18s}
 html.gl .sw{display:flex}
+.sw::before{content:"";position:absolute;z-index:-1;left:50%;top:-28px;bottom:calc(-12px - var(--sb));width:100vw;transform:translateX(-50%);background:linear-gradient(rgba(0,0,0,0),#000 28px);pointer-events:none}
 html.gl.rdy.sw-on .sw{opacity:1;visibility:visible;transition:opacity .18s linear,visibility 0s linear}
 .sw button{position:relative;flex:none;width:44px;height:44px;border:0;border-radius:50%;padding:0;background:none;color:inherit;cursor:pointer;appearance:none;-webkit-appearance:none}
 .sw button::before,.sw button::after{content:"";position:absolute;border-radius:50%}
@@ -211,7 +215,7 @@ html.gl.drag,html.gl.drag *{cursor:grabbing!important}
     <h1 id="t"><span class="n">NA2</span><span class="sr"> marškinėliai</span></h1>
   </div>
   <canvas class="o3" id="gl" aria-hidden="true"></canvas>
-  <div class="o3 fr fr-hero"></div><div class="o3 fr fr-print"></div><div class="o3 fr fr-item"></div>
+  <div class="o3 fr fr-hero"></div><div class="o3 fr fr-print"></div><div class="o3 fr fr-side"></div><div class="o3 fr fr-item"></div>
   <p class="o3 sr" id="live" role="status"></p>
   <div class="o3" id="ctl" role="group" aria-label="Marškinėlių 3D vaizdas" aria-describedby="ctl-d">
     <p class="sr" id="ctl-d">NA2 marškinėliai ant 3D figūros. Priekyje – „NA2“ iš eurų banknotų, nugaroje – Šilainių žemėlapis.</p>

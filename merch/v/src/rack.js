@@ -26,10 +26,13 @@
    placeholders in the average colours (AVG in config.js), reflections, lazy
    textures, flick physics (a Flick1D from spin.js with friction 2.2, spring
    110 / 0.8, detents on integers), per-panel swing springs, the tap raycast
-   and scroll reclaiming uUser. Until then u = uScroll and the rack beat
-   shows the bare rail. */
+   and scroll reclaiming uUser. Until then there is nothing to slide to: u
+   stays −1 (the camera stays with the figure under the rail), and the
+   #stovas block in index.html ends after that beat. With the panels built,
+   u follows uScroll (and the hand), and #stovas grows to 2.75 screens so
+   that the photos get their 1.40 screens of scroll. */
 import { Mesh, BoxGeometry, MeshBasicMaterial } from 'three';
-import { CFG, clamp } from './config.js';
+import { CFG } from './config.js';
 
 export const rack = {
   u: -1,
@@ -62,7 +65,7 @@ export const rack = {
   layout() {},
 
   update(dt, state) {
-    this.u = clamp(state.uScroll, -1, CFG.PANEL.count - 1);
+    this.u = -1;                                       // no panels yet: see the note at the top
     /* the rail draws across what the camera sees at the figure; the rest of
        its length (off screen to the right) is there once the draw is done */
     const p = state.rail;

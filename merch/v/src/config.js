@@ -33,7 +33,7 @@ export const CFG = {
 
   /* anchors measured on the model */
   TOP_BELOW_HEM: 0.06,        // the "top" box runs from this far below the hem to the top of the head
-  CHEST_GROW: 1.5,            // CHEST frames the chest print grown by this (spec 2.4: tuned on renders so the lettering fills a phone)
+  CHEST_GROW: 1.3,            // CHEST frames the chest print grown by this (spec 2.4: tuned on renders so the lettering fills a phone)
   BACK_GROW: 1.12,            // BACK frames the back artwork (map and caption) grown by this
   /* MAP frames the artwork and the red line under its caption, with this much air round them (a fraction
      of the artwork's width on each side) */
@@ -84,8 +84,9 @@ export const CFG = {
   JUMP: 2,                    // a jump of more than this many screens in one frame dips the canvas
   JUMP_MS: 220,
 
-  /* colour swatches: shown while the hem projects at least `on` px above their row, hidden again under `off` */
-  SWATCH: { on: 14, off: 6, lip: 64 },
+  /* colour swatches: shown while the hem projects at least `on` px above their row, hidden again under `off`
+     (the row's black foot starts 28 px above it); lip: the soft edge of the info plate */
+  SWATCH: { on: 34, off: 28, lip: 64 },
   COLOR_MS: 250,              // the cloth eases from one colour to the other in this time
 
   /* rack */

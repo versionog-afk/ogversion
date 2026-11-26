@@ -1,19 +1,21 @@
-// Light / material variants side by side. node tune-na2.js <w> <h> <coarse> <stop> <out.png> [cols] [scale] [clip x,y,w,h]
-const { chromium } = require('playwright');
+// Light / material variants side by side.
+//   node tune-na2.js <w> <h> <coarse 0|1> <stop> <out.png> [cols] [scale] [clip x,y,w,h]
+//   stop: a scroll position in screens or an anchor such as info@0.3 (the ?s= hook)
+//   VARIANTS=<file.json> (default tune-variants.json): { name: { color: 'white', LIGHT: {…}, CLOTH: {…}, PANTS: {…}, PLASTER: {…}, yaw: 180 }, … }
+//   CLOTH takes base, rim, rimPow, color, roughness, sheenColor and is applied to the tee as it is after `color` was chosen.
 const fs = require('fs');
-const PORT = process.env.PORT || 8361;
+const { chromium, open, ready, settle } = require('./lib-na2.js');
 const VARIANTS = JSON.parse(fs.readFileSync(process.env.VARIANTS || __dirname + '/tune-variants.json', 'utf8'));
 (async () => {
   const [w, h, coarse, stop, out, cols = '3', scale = '0.5', clipArg] = process.argv.slice(2);
   const clip = clipArg ? (([x, y, cw, ch]) => ({ x, y, width: cw, height: ch }))(clipArg.split(',').map(Number)) : undefined;
   const b = await chromium.launch();
-  const ctx = await b.newContext({ viewport: { width: +w, height: +h }, deviceScaleFactor: 1, hasTouch: coarse === '1', isMobile: coarse === '1' });
-  const p = await ctx.newPage();
-  p.on('pageerror', e => console.log('pageerror: ' + e.message));
-  await p.goto('http://127.0.0.1:' + PORT + '/merch?3d=1&s=' + encodeURIComponent(stop) + (process.env.Q ? '&q=' + process.env.Q : ''), { waitUntil: 'load' });
-  await p.waitForFunction(() => window.__m && window.__m.ready, { timeout: 180000 });
+  const { p } = await open(b, { width: +w, height: +h, coarse: coarse === '1' }, '&s=' + encodeURIComponent(stop) + (process.env.Q ? '&q=' + process.env.Q : ''));
+  await ready(p);
   const files = [];
   for (const [name, v] of Object.entries(VARIANTS)) {
+    await p.evaluate(c => { window.__m.color = c; }, v.color || 'black');
+    await settle(p);
     await p.evaluate(v => {
       const D = window.__m.dbg, L = D.CFG.LIGHT, G = D.world.groups;
       const set = (o, patch) => { for (const k in patch) { if (patch[k] && typeof patch[k] === 'object' && !Array.isArray(patch[k]) && o[k]) set(o[k], patch[k]); else o[k] = patch[k]; } };
@@ -24,7 +26,7 @@ const VARIANTS = JSON.parse(fs.readFileSync(process.env.VARIANTS || __dirname + 
       if (v.yaw !== undefined) { D.spin.core.x = v.yaw; }
       D.loop.wake();
     }, v);
-    const t0 = Date.now(); while (Date.now() - t0 < 8000) { await p.waitForTimeout(250); if (!(await p.evaluate(() => window.__m.running))) break; }
+    await settle(p, 8000);
     const f = __dirname + '/tmp/tune-' + name + '.png';
     await p.screenshot({ path: f, clip });
     files.push(f);
