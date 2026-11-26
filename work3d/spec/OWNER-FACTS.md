@@ -39,6 +39,11 @@ Unisex oversized t-shirt 220 g/m²
 - Back: print-ready artwork version 2, 29.7 cm wide and 33.6 cm tall including the caption (from the print file's page size). White ink on the black shirt, black ink on the white shirt.
 - Front: the „NA2“ lettering on the wearer's left chest. Printed width in centimetres: not supplied yet.
 
+## Shirt reference
+
+- The cut is the one in `work3d/ref/shirt-black-front.png` (the owner's picture, with the custom label inside the neck: black, with the „NA2“ mark in white). Earlier pictures of a different, shorter blank shirt were withdrawn by the owner on 2026-11-26: do not use them.
+- Label artwork as a file: not supplied yet.
+
 ## Not supplied yet
 
 - Names of the two types as they should appear on the page.

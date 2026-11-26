@@ -27,8 +27,8 @@ function checker() {
   g.fillStyle = '#000'; g.font = 'bold 70px sans-serif'; g.fillText('TOP-LEFT', 20, 80); g.fillText('BOTTOM-RIGHT', c.width - 560, c.height - 30);
   const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.flipY = false; t.anisotropy = 8; return t;
 }
-const CLASSES = [['printFront', /print.?front/i], ['printBack', /print.?back/i], ['hair', /hair/i], ['pants', /pants|trouser/i], ['shoes', /shoe|sneaker|boot/i], ['body', /body|skin|mannequin|figure/i], ['tee', /tee|fabric|shirt|collar|rib|sleeve/i]];
-const groups = { printFront: [], printBack: [], hair: [], pants: [], shoes: [], body: [], tee: [], other: [] };
+const CLASSES = [['printFront', /print.?front/i], ['printBack', /print.?back/i], ['label', /label/i], ['hair', /hair/i], ['pants', /pants|trouser/i], ['shoes', /shoe|sneaker|boot/i], ['body', /body|skin|mannequin|figure/i], ['tee', /tee|fabric|shirt|collar|rib|sleeve/i]];
+const groups = { printFront: [], printBack: [], label: [], hair: [], pants: [], shoes: [], body: [], tee: [], other: [] };
 const orig = new Map(); const errors = []; const uvTex = checker(); let texFront, texBack;
 const box = k => { const b = new THREE.Box3(); groups[k].forEach(m => b.expandByObject(m)); return b; };
 const r3 = v => [v.x, v.y, v.z].map(x => +x.toFixed(4));
@@ -65,6 +65,7 @@ function mats(look) {
   groups.other.forEach(m => cloth(m, 0x34332f, 0x3a3832));
   for (const m of groups.body) { const o = orig.get(m); m.material = new THREE.MeshStandardMaterial({ color: flat ? 0xb9b9b9 : 0xd6cfc3, roughness: 0.62, metalness: 0, side: o.side, normalMap: o.normalMap || null }); }
   for (const m of groups.hair) { const o = orig.get(m); m.material = new THREE.MeshStandardMaterial({ color: flat ? 0x9a9a9a : 0x2a2622, roughness: 0.7, metalness: 0, side: o.side, normalMap: o.normalMap || null }); }
+  for (const m of groups.label) { m.material = new THREE.MeshStandardMaterial({ color: flat ? 0x8a8a8a : 0x0b0b0c, roughness: 0.7, metalness: 0, side: THREE.DoubleSide }); }
   for (const m of groups.shoes) { const o = orig.get(m); m.material = new THREE.MeshStandardMaterial({ color: flat ? 0xa9a9a9 : 0x121213, roughness: 0.55, metalness: 0, side: o.side }); }
   for (const [k, tex] of [['printFront', texFront], ['printBack', texBack]]) for (const m of groups[k]) {
     m.material = new THREE.MeshStandardMaterial({ map: look === 'uv' ? uvTex : look === 'clay' ? null : tex, color: look === 'clay' ? 0xe0a8a0 : 0xffffff, transparent: !flat, roughness: 0.82, metalness: 0, side: THREE.FrontSide, polygonOffset: true, polygonOffsetFactor: -4, polygonOffsetUnits: -4 });
