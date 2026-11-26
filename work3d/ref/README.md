@@ -10,7 +10,10 @@ Copy these files here on the working computer (the owner has them):
 | `worn-front.jpg` | the shirt worn, from the front, face cropped out (source for `front`) |
 | `print-closeup.jpg` | close-up of the front lettering (already here) |
 | `mockup-sheet.jpg` | the designer's flat mockup of both sides (already here) |
-| `originals/na2.webp`, `originals/map-white.webp`, `originals/map-black.webp` | the original print artwork with transparent backgrounds (PNG also accepted); `art/make_textures.py` builds the textures from them |
+| `originals/na2.webp` | the front lettering artwork with a transparent background |
+| `originals/map-black.png` | the back artwork, print-ready version 2 (29.7 × 35.4 cm page), rendered from `originals/pdf/map-black.pdf` at 300 ppi with `pdftocairo -png -r 300 -singlefile`; `art/make_textures.py` builds both textures from these two files |
+| `originals/pdf/` | the owner's print-ready PDFs (front lettering, back map in white ink and in black ink) |
+| `blank-*.png` | the supplier's pictures of the blank shirt, front and back, white and black: cut reference only, never published |
 | `video.mov` | 9 s phone video of the person turning round; fit and drape reference |
 
 Rules:

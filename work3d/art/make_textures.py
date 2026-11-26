@@ -2,8 +2,10 @@
 
     python3 work3d/art/make_textures.py            (run from the repository root)
 
-Inputs (local only, not in git): work3d/ref/originals/na2.(png|webp)  and  map-white.(png|webp) or map-black.(png|webp),
-each with a transparent background.
+Inputs (local only, not in git): work3d/ref/originals/na2.(png|webp) with a transparent background, and the back artwork
+as map-black.(png|webp): the print-ready "V2" file rendered from its PDF at 300 ppi
+(pdftocairo -png -r 300 -singlefile pdf/map-black.pdf map-black). It may be black ink on an opaque white page: then the
+ink is taken from its darkness. PRINT_WIDTH_CM is the real width of the back artwork on the shirt (the PDF page width).
 Outputs: work3d/art/front.png (3:2), back.png (3:4), meta.json.
 
 Conventions the 3D page and the model rely on:
@@ -22,6 +24,7 @@ INK = (244, 242, 238)
 FRONT_SIZE = (1500, 1000)
 BACK_SIZE = (1536, 2048)
 MARGIN = 0.015
+PRINT_WIDTH_CM = 29.7   # width of the back artwork as printed (page width of the print-ready PDF)
 
 
 def find(*names):
@@ -79,16 +82,26 @@ def box(ox, oy, w, h, W, H):
     return {'u0': round(ox / W, 4), 'u1': round((ox + w) / W, 4), 'v0': round(oy / H, 4), 'v1': round((oy + h) / H, 4)}
 
 
+def ink_alpha(im):
+    """Ink coverage of single-colour line art: the alpha channel if the file has one, otherwise its darkness."""
+    arr = np.asarray(im.convert('RGBA'))
+    if arr[..., 3].min() < 250:
+        return arr[..., 3]
+    lum = np.asarray(im.convert('L')).astype(np.float32)
+    return np.clip(255 - lum, 0, 255).astype(np.uint8)
+
+
 def back():
-    im = Image.open(find('map-white', 'map-black', 'map')).convert('RGBA')
-    a = np.asarray(im)[..., 3]
+    Image.MAX_IMAGE_PIXELS = None
+    src = Image.open(find('map-black', 'map-white', 'map'))
+    a = ink_alpha(src)
     x0, y0, x1, y1 = bbox(a)
     alpha = Image.fromarray(a[y0:y1, x0:x1])
     W, H = BACK_SIZE
     w = round(W * (1 - 2 * MARGIN)); s = w / alpha.width; h = round(alpha.height * s)
     if h > H * (1 - 2 * MARGIN):
         sys.exit('the back artwork is taller than a 3:4 canvas: change BACK_SIZE and the model contract together')
-    alpha = alpha.resize((w, h), Image.LANCZOS)
+    alpha = alpha.resize((w, h), Image.LANCZOS)   # Pillow uses an area-weighted filter when shrinking: thin lines survive
     ox, oy = (W - w) // 2, round(H * MARGIN)
     A = np.zeros((H, W), np.uint8); A[oy:oy + h, ox:ox + w] = np.asarray(alpha)
     out = np.zeros((H, W, 4), np.uint8); out[..., :3] = INK; out[..., 3] = A
@@ -103,7 +116,8 @@ def back():
     return {'w': W, 'h': H, 'artBox': box(ox, oy, w, h, W, H),
             'mapBox': box(int(mcols[0]), oy, int(mcols[-1] + 1 - mcols[0]), int(map_bottom - oy), W, H),
             'captionBox': box(int(cols[0]), int(cy0), int(cols[-1] + 1 - cols[0]), int(cy1 - cy0), W, H),
-            'sourcePx': [int(x1 - x0), int(y1 - y0)]}
+            'sourcePx': [int(x1 - x0), int(y1 - y0)],
+            'printCm': [PRINT_WIDTH_CM, round(PRINT_WIDTH_CM * (y1 - y0) / (x1 - x0), 2)]}
 
 
 if __name__ == '__main__':

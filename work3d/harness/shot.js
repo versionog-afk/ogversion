@@ -42,7 +42,7 @@ const rel = p => '/' + path.relative(ROOT, path.resolve(p));
     if (c.body && Math.abs(stats.figureMinY) > 0.02) w.push('lowest point is at y = ' + stats.figureMinY + ', the figure must stand on y = 0');
     const pf = stats.printFrontSizeM, pb = stats.printBackSizeM;
     if (pf) { if (pf[0] < 0.09 || pf[0] > 0.13) w.push('PrintFront width ' + pf[0] + ' m, expected about 0.105'); if (stats.printFrontCenterM[0] < 0.03) w.push('PrintFront must sit on the wearer\'s left chest (+X, centre x at least 0.03), got x = ' + stats.printFrontCenterM[0]); if (stats.printFrontNormal && stats.printFrontNormal[2] < 0.6) w.push('PrintFront must face +Z, average normal ' + stats.printFrontNormal); }
-    if (pb) { if (pb[0] < 0.32 || pb[0] > 0.44) w.push('PrintBack width ' + pb[0] + ' m, expected about 0.38'); if (Math.abs(stats.printBackCenterM[0]) > 0.02) w.push('PrintBack must be centred on the back, got x = ' + stats.printBackCenterM[0]); if (stats.printBackNormal && stats.printBackNormal[2] > -0.6) w.push('PrintBack must face -Z, average normal ' + stats.printBackNormal); }
+    if (pb) { if (pb[0] < 0.27 || pb[0] > 0.33) w.push('PrintBack width ' + pb[0] + ' m, expected about 0.297 (the back artwork is 29.7 cm wide; the decal is its 3:4 canvas, 0.297 x 0.396 m)'); if (Math.abs(stats.printBackCenterM[0]) > 0.02) w.push('PrintBack must be centred on the back, got x = ' + stats.printBackCenterM[0]); if (stats.printBackNormal && stats.printBackNormal[2] > -0.6) w.push('PrintBack must face -Z, average normal ' + stats.printBackNormal); }
     if (stats.fileBytes > 8e6) w.push('file larger than 8 MB');
   }
   stats.contractWarnings = w;
