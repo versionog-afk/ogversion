@@ -196,11 +196,145 @@ h1 .n{text-decoration-thickness:.07em;text-underline-offset:.11em}
 #vx{right:calc(env(safe-area-inset-right,0px) + 12px);bottom:calc(var(--sb) + 12px)}
 @keyframes in{from{opacity:0}to{opacity:1}}
 
+/* ===== 3D mode. Everything here needs html.gl, which the gate below sets only on capable devices. ===== */
+.o3{display:none}
+html.gl .os{display:none}
+html.gl .o3{display:block}
+html.gl{
+  scroll-behavior:auto;
+  /* --u: the hero cluster's unit; --cx/--ct: its centre line and top; --ta: space taken by the two top rows */
+  --u:min(1vw,calc(var(--vh)*.00585),calc((var(--vh) - 208px - var(--st) - var(--sb))/118));
+  --cx:50vw;
+  --tl:clamp(1.125rem,.7rem + 1.7vw,1.75rem);
+  --ta:calc(var(--top) + var(--st) + 34px);
+  --ch:calc(118*var(--u) + 1.3*var(--tl) + 86px);
+  --ct:calc(var(--ta) + max(0px,(var(--vh) - var(--ta) - var(--sb) - var(--ch))/2));
+}
+html.gl main{touch-action:pan-y pinch-zoom}
+html.gl .top{position:relative;z-index:2;right:auto;padding-right:var(--gr)}
+
+/* hero: a spacer in the flow; the stage is pinned to the viewport */
+html.gl .hero{display:block;height:calc(var(--vh)*1.8 - var(--top) - var(--st))}
+.stage{display:contents}
+html.gl .stage{display:block;position:fixed;z-index:0;top:0;left:0;width:100vw;height:var(--vh);-webkit-user-select:none;user-select:none}
+html.gl #gl{position:absolute;z-index:1;top:0;left:0;width:100vw;height:100vh;height:100lvh;pointer-events:none}
+html.gl .hero__t{display:contents;container-type:normal}
+
+/* cluster: the 47 behind the canvas (z 0), MILLION in front of it (z 2) */
+html.gl h1{position:absolute;left:calc(var(--cx) - 50*var(--u));top:var(--ct);width:calc(100*var(--u));height:calc(118*var(--u));margin:0;font-size:calc(23*var(--u));line-height:.8;text-align:center}
+html.gl h1 span{display:block}
+html.gl h1 .n{position:relative;z-index:0;width:-moz-fit-content;width:fit-content;margin:0 auto;padding-right:.045em;font-size:calc(75*var(--u));line-height:.72;letter-spacing:-.045em;text-decoration:none;transform-origin:0 0;will-change:transform,opacity}
+/* the red line: a faint track, and the fill that is the loading bar */
+html.gl h1 .n::before,html.gl h1 .n::after{content:"";position:absolute;left:0;right:0;top:calc(56*var(--u));height:.035em;background:var(--signal)}
+html.gl h1 .n::before{opacity:.3}
+html.gl h1 .n::after{transform-origin:0 50%;transform:scaleX(var(--p,0))}
+html.gl h1 .mil{position:absolute;z-index:2;left:0;right:0;top:calc(99.6*var(--u));margin:0}
+html.gl h1 .mil::before{content:"";position:absolute;z-index:-1;inset:0 3%;background:rgba(0,0,0,.62);box-shadow:0 0 12px 8px rgba(0,0,0,.62)}
+html.gl.n-off h1 .n{visibility:hidden}
+
+html.gl .hero__k{position:absolute;z-index:2;left:var(--gl);top:calc(var(--top) + var(--st) - 6px);line-height:46px}
+html.gl .hero__line{position:absolute;z-index:2;left:var(--gl);right:var(--gr);top:calc(var(--ct) + 118*var(--u) + 12px);margin:0;padding:0;font-size:var(--tl);line-height:1.3;text-align:center}
+html.gl .hero__meta{position:absolute;z-index:2;right:var(--gr);top:calc(var(--top) + var(--st) - 6px);height:46px;margin:0;padding:0;border:0;gap:28px}
+html.gl .hero__meta a{display:none;order:-1}
+@media (min-width:560px){html.gl .hero__meta a{display:inline-block}}
+
+/* HUD: view buttons, hint */
+html.gl .hud{position:absolute;z-index:2;left:var(--gl);right:var(--gr);top:calc(var(--ct) + 118*var(--u) + 1.3*var(--tl) + 26px);display:flex;align-items:center;height:44px}
+.hb{position:relative;height:44px;min-width:44px;padding:0 14px;border:1px solid var(--line);border-radius:0;background:#000;color:var(--bone);font:400 .75rem/1 var(--mono);letter-spacing:.2em;text-indent:.2em;text-transform:uppercase;white-space:nowrap;cursor:pointer;appearance:none;-webkit-appearance:none}
+.hb+.hb{margin-left:-1px}
+.hb[aria-pressed=true]{background:var(--bone);border-color:var(--bone);color:#000}
+.hb:focus-visible{z-index:1}
+@media (hover:hover){.hb:hover{border-color:var(--bone);z-index:1}}
+@media (max-width:480px){.hb{padding:0 10px}}
+@media (max-width:374px){.hb{padding:0 9px;letter-spacing:.12em;text-indent:.12em}}
+.hb{flex:none}
+.hint{margin-left:auto;padding-left:10px;white-space:nowrap}
+html.kf .hint{letter-spacing:.12em}
+.hint.pulse{animation:pulse .5s ease}
+@keyframes pulse{50%{color:var(--bone)}}
+
+/* HUD on and off: class toggles, 180 ms */
+html.gl .hud,html.gl .mil,html.gl .hero__line,html.gl .hero__k,html.gl .hero__meta{transition:opacity .18s linear,visibility 0s linear}
+html.gl .hud,html.gl.hud-off .mil,html.gl.hud-off .hero__line,html.gl.hud-off .hero__k,html.gl.hud-off .hero__meta,html.gl.near .mil,html.gl.near .hero__line{opacity:0;visibility:hidden;transition:opacity .18s linear,visibility 0s linear .18s}
+html.gl.rdy:not(.hud-off) .hud{opacity:1;visibility:visible;transition:opacity .18s linear,visibility 0s linear}
+
+/* frames: empty boxes the script reads; the camera puts its subjects into them */
+html.gl .fr{position:absolute;z-index:2;visibility:hidden;pointer-events:none}
+.fr-hero{left:calc(var(--cx) - 43*var(--u));top:calc(var(--ct) + 42*var(--u));width:calc(86*var(--u));height:calc(63.6*var(--u))}
+html.gl.kf:not(.hud-off) .fr-hero{visibility:visible;outline:2px solid var(--bone);outline-offset:-2px}
+.fr-print{left:4vw;right:4vw;top:calc(52px + var(--vh)*.03);height:calc(var(--vh)*.46)}
+.fr-47{left:35vw;width:30vw;top:calc(var(--vh)*.38);height:calc(var(--vh)*.08)}
+.fr-item{left:11vw;width:78vw;height:78vw;top:calc(52px + var(--vh)*.06)}
+
+/* plates: solid black text blocks that wipe over the stage */
+html.gl .pl,html.gl .win,html.gl .blk{position:relative;z-index:1}
+html.gl .blk{background:#000}
+html.gl .pl{background:#000}
+html.gl .pl::before,html.gl .pl::after{content:"";position:absolute;left:0;right:0;height:64px;pointer-events:none}
+html.gl .pl::before{bottom:100%;background:linear-gradient(rgba(0,0,0,0),#000)}
+html.gl .pl::after{top:100%;background:linear-gradient(#000,rgba(0,0,0,0))}
+html.gl .print{display:block;background:none}
+html.gl .print__b{padding:36px var(--gr) 40px var(--gl)}
+html.gl .q{font-size:6vw;font-size:min(6.75cqi,3.5rem)}
+html.gl .spec{display:block;padding:40px var(--gr) 44px var(--gl)}
+html.gl .spec__h{padding:0;font-size:clamp(2.25rem,11.5vw,5rem)}
+html.gl .spec dl{margin:28px 0 0;font-size:clamp(.9375rem,3.9vw,1rem)}
+html.gl .spec dl div{grid-template-columns:6rem minmax(0,1fr);gap:12px;padding:13px 0}
+html.gl .avail{margin:26px 0 0;padding:0}
+
+/* windows: transparent stretches of scroll with one sticky control */
+html.gl .win{display:flex;flex-direction:column;justify-content:flex-end}
+html.gl #sk{height:calc(var(--vh)*.8);padding-bottom:84px}
+html.gl #stovas{height:calc(var(--vh)*2.8)}
+.win__s{position:sticky;bottom:calc(var(--sb) + 16px);display:flex;align-items:center;padding:0 var(--gr) 0 var(--gl)}
+.win__s[hidden]{display:none}
+
+/* the grid is 3 × 3 at every width */
+html.gl .g{grid-template-columns:repeat(3,minmax(0,1fr))}
+html.gl .g .z:nth-child(5){grid-column:auto}
+
+html.gl.rdy .stage,html.gl.rdy .win{cursor:grab}
+html.gl.drag,html.gl.drag *{cursor:grabbing!important}
+
+/* landscape: cluster on the right, a 40vw column of words and controls on the left, plates as left cards */
+@media (min-aspect-ratio:1/1){
+  html.gl{
+    --u:min(calc(var(--vh)*.0072),.62vw);
+    --cx:68vw;
+    --ct:calc((var(--vh) - 118*var(--u))/2);
+    --lw:calc(40vw - var(--gl));
+    --lb:max(calc(var(--sb) + 8px),calc(var(--vh)*.04));
+  }
+  html.gl .hero__meta{left:var(--gl);right:auto;top:auto;bottom:var(--lb);width:var(--lw);border-top:1px solid var(--line)}
+  html.gl .hero__meta a{display:inline-block;order:0}
+  html.gl .hud{right:auto;top:auto;bottom:calc(var(--lb) + 60px);width:var(--lw)}
+  html.gl .hero__line{right:auto;top:auto;bottom:calc(var(--lb) + 118px);width:var(--lw);font-size:clamp(1.0625rem,.3rem + 1.6vw,1.75rem);text-align:left}
+  .fr-print{left:42vw;top:calc(var(--vh)*.1);height:calc(var(--vh)*.8)}
+  .fr-47{left:65vw;width:12vw;top:calc(var(--vh)*.41);height:calc(var(--vh)*.1)}
+  .fr-item{left:calc(50vw - var(--vh)*.25);width:calc(var(--vh)*.5);height:calc(var(--vh)*.5);top:calc(var(--vh)*.19)}
+  html.gl #stovas{height:calc(var(--vh)*2.3)}
+  html.gl .pl{width:min(460px,40vw)}
+  html.gl .print__b,html.gl .spec{padding-right:24px}
+  html.gl .spec__h{font-size:clamp(2rem,4.4vw,3.5rem)}
+}
+/* narrow landscape (a phone on its side): the tagline takes two lines and the hint sits beside its second line, above the right end of the buttons */
+@media (min-aspect-ratio:1/1) and (max-width:949px){
+  html.gl .hero__line span{display:block}
+  html.gl .hud .hint{position:absolute;right:0;bottom:calc(100% + 16px);padding:0}
+  .hb{padding:0 10px}
+}
+@media (min-aspect-ratio:1/1) and (max-width:719px){.hb{padding:0 9px;letter-spacing:.12em;text-indent:.12em}}
+
 @media (prefers-reduced-motion:reduce){
   html{scroll-behavior:auto}
   *,*::before,*::after{animation:none!important;transition:none!important}
 }
 </style>
+<!-- Gate. 3D only where it will run well: WebGL2 without a performance caveat, not a software renderer, no reduced motion,
+     no forced colours, no Save-Data, no 2g; ?3d=1 / ?3d=0 force it. It adds class "gl" to <html>, preloads and starts
+     /merch/v/app.js (and drops the class again if that file fails to load). Otherwise this is the plain page and
+     nothing 3D is downloaded. -->
+<script>!function(d,c,r,h,q,v,L,g,e,k){r=d.documentElement;h=d.head;q=/[?&]3d=([01])/.exec(location.search);v='/merch/v/';L=function(t,a,l,i){l=d.createElement(t);for(i in a)l.setAttribute(i,a[i]);return h.appendChild(l)};try{k=q?q[1]==1:!matchMedia('(prefers-reduced-motion:reduce),(forced-colors:active)').matches&&!c.saveData&&!/2g/.test(c.effectiveType)&&(g=d.createElement('canvas').getContext('webgl2',{failIfMajorPerformanceCaveat:!0}))&&(e=g.getExtension('WEBGL_debug_renderer_info'),k=!/swiftshader|llvmpipe|software/i.test(e&&g.getParameter(37446)),(e=g.getExtension('WEBGL_lose_context'))&&e.loseContext(),k)}catch(x){k=0}if(k){r.classList.add('gl');L('link',{rel:'modulepreload',href:v+'app.js'});L('link',{rel:'preload',as:'fetch',crossorigin:'',href:v+'tee.glb'});L('link',{rel:'preload',as:'fetch',crossorigin:'',href:v+'print.webp'});L('script',{type:'module',src:v+'app.js'}).onerror=function(){r.classList.remove('gl')}}}(document,navigator.connection||{})</script>
 </head>
 <body>
 <a class="skip" href="#turinys">Į turinį</a>
@@ -212,27 +346,42 @@ h1 .n{text-decoration-thickness:.07em;text-underline-offset:.11em}
 
 <main id="turinys">
 
-<section class="hero" aria-labelledby="t">
+<section class="hero" id="hero" aria-labelledby="t">
+  <div class="stage">
   <div class="hero__t">
-    <p class="m">Kaunas, Šilainiai</p>
-    <h1 id="t"><span class="n">47</span> <span lang="en">MILLION</span></h1>
+    <p class="m hero__k">Kaunas, Šilainiai</p>
+    <h1 id="t"><span class="n">47</span> <span class="mil" lang="en">MILLION</span></h1>
     <p class="hero__line"><span>Antraštė ne mūsų.</span> <span>Skaičius – mūsų.</span></p>
   </div>
-  <button class="z hero__img" type="button" data-src="/merch/p/10.jpg" aria-haspopup="dialog">
-    <img src="/merch/p/10-1200.jpg" srcset="/merch/p/10-1200.jpg 1200w, /merch/p/10.jpg 4096w" sizes="(min-aspect-ratio:1/1) and (max-height:500px) min(100vh,400px), (min-width:900px) and (min-aspect-ratio:1/1) min(100vh,64vw), (min-width:560px) and (min-aspect-ratio:1/1) min(100vh,56vw), (max-width:559px) min(100vw,400px), 100vw" width="1200" height="1200" fetchpriority="high" alt="Juodi marškinėliai „47 MILLION“ ant betono. Ant krūtinės – naujienų kortelė: violetinis naktinis reklaminis stendas ir balta antraštė.">
+  <canvas class="o3" id="gl" aria-hidden="true"></canvas>
+  <div class="o3 fr fr-hero"></div><div class="o3 fr fr-print"></div><div class="o3 fr fr-47"></div><div class="o3 fr fr-item"></div>
+  <p class="o3 sr" id="live" role="status"></p>
+  <div class="o3 hud" role="group" aria-label="Marškinėlių 3D vaizdas" aria-describedby="hud-d">
+    <p class="sr" id="hud-d">Juodi marškinėliai „47 MILLION“. Ant krūtinės – naujienų kortelė: violetinis naktinis reklaminis stendas ir balta antraštė.</p>
+    <label class="sr" for="rot">Pasukti marškinėlius</label>
+    <input class="sr" id="rot" type="range" min="0" max="345" step="15" value="0" aria-valuetext="Priekis">
+    <button class="hb" id="bf" type="button" aria-pressed="true">Priekis</button><button class="hb" id="bb" type="button" aria-pressed="false">Nugara</button><button class="hb" id="bz" type="button" aria-pressed="false">Iš arti</button>
+    <span class="m hint" id="hint" aria-hidden="true">Suk.</span>
+  </div>
+  <button class="z hero__img os" type="button" data-src="/merch/p/10.jpg" aria-haspopup="dialog">
+    <img src="/merch/p/10-1200.jpg" srcset="/merch/p/10-1200.jpg 1200w, /merch/p/10.jpg 4096w" sizes="(min-aspect-ratio:1/1) and (max-height:500px) min(100vh,400px), (min-width:900px) and (min-aspect-ratio:1/1) min(100vh,64vw), (min-width:560px) and (min-aspect-ratio:1/1) min(100vh,56vw), (max-width:559px) min(100vw,400px), 100vw" width="1200" height="1200" loading="lazy" fetchpriority="high" alt="Juodi marškinėliai „47 MILLION“ ant betono. Ant krūtinės – naujienų kortelė: violetinis naktinis reklaminis stendas ir balta antraštė.">
   </button>
+  <script>/* the hero image is lazy so that 3D visitors never download it; the plain page wants it at once */
+  document.documentElement.classList.contains('gl')||(document.querySelector('.hero__img img').loading='eager')</script>
   <div class="hero__meta">
-    <p class="m">Maketas</p>
+    <p class="m os">Maketas</p>
+    <p class="m o3" id="st">Jungiam šviesą</p>
     <a class="m" href="#spauda">Spauda <svg class="i" viewBox="0 0 12 12" aria-hidden="true"><path d="M6 1v10M1.5 6.5 6 11l4.5-4.5"/></svg></a>
+  </div>
   </div>
 </section>
 
 <section id="spauda" aria-labelledby="h-spauda">
-  <button class="z band" type="button" data-src="/merch/p/11.jpg" aria-haspopup="dialog">
+  <button class="z band os" type="button" data-src="/merch/p/11.jpg" aria-haspopup="dialog">
     <img src="/merch/p/11-1200.jpg" srcset="/merch/p/11-1200.jpg 1200w, /merch/p/11.jpg 2400w" sizes="(max-width:559px) min(100vw,400px), 100vw" width="1200" height="1200" loading="lazy" decoding="async" alt="Spauda iš arti: antraštės eilutė „Sold 47 Million Copies“ ant juodo audinio.">
   </button>
   <div class="print">
-    <div class="print__b">
+    <div class="print__b pl">
       <h2 class="m" id="h-spauda">Spauda</h2>
       <p class="lead">Ant krūtinės&nbsp;– naujienų kortelė. Viršuje&nbsp;– violetinis naktinis reklaminis stendas. Po&nbsp;juo&nbsp;– balta antraštė, maža žyma „<span lang="en">Entertainment</span>“ ir žurnalo ženklas.</p>
       <figure>
@@ -246,7 +395,7 @@ h1 .n{text-decoration-thickness:.07em;text-underline-offset:.11em}
         <p><span>47 – OG VERSION skaičius.</span> <span>Tas pats, kuris <a class="nw" href="https://ogversion.com/47">„47 Studio“</a> pavadinime.</span></p>
       </div>
     </div>
-    <div class="art">
+    <div class="art os">
       <button class="z" type="button" data-src="/merch/p/12.jpg" aria-haspopup="dialog">
         <img src="/merch/p/12-1200.jpg" srcset="/merch/p/12-1200.jpg 1200w, /merch/p/12.jpg 2400w" sizes="(min-width:900px) 50vw, (max-width:559px) min(100vw,400px), 100vw" width="1200" height="1200" loading="lazy" decoding="async" alt="Marškinėlių piešinys juodame fone: violetinis naktinis reklaminis stendas, balta antraštė, apačioje žyma „Entertainment“ ir žurnalo ženklas.">
       </button>
@@ -255,7 +404,11 @@ h1 .n{text-decoration-thickness:.07em;text-underline-offset:.11em}
   </div>
 </section>
 
-<section class="sec spec" aria-labelledby="h-tiek">
+<div class="o3 win" id="sk">
+  <div class="win__s"><button class="hb" id="sv" type="button" aria-pressed="true">Šviesa</button></div>
+</div>
+
+<section class="sec spec pl" id="tiek" aria-labelledby="h-tiek">
   <h2 class="d spec__h" id="h-tiek">Kol kas tiek</h2>
   <dl>
     <div><dt class="m">Daiktas</dt><dd>Marškinėliai</dd></div>
@@ -266,22 +419,29 @@ h1 .n{text-decoration-thickness:.07em;text-underline-offset:.11em}
   <p class="avail">Kaina ir dydžiai skelbiami kartu su dropu.</p>
 </section>
 
-<section aria-labelledby="h-na2">
+<div class="o3 win" id="stovas">
+  <div class="win__s" role="group" aria-label="Nuotraukų stovas" hidden>
+    <button class="hb" id="rp" type="button" aria-label="Ankstesnis vaizdas"><svg class="i" viewBox="0 0 12 12" aria-hidden="true"><path d="M11 6H1M5.5 1.5 1 6l4.5 4.5"/></svg></button><button class="hb" id="rc" type="button">01 / 09</button><button class="hb" id="rn" type="button" aria-label="Kitas vaizdas"><svg class="i" viewBox="0 0 12 12" aria-hidden="true"><path d="M1 6h10M6.5 1.5 11 6l-4.5 4.5"/></svg></button>
+    <span class="m hint" id="rh" aria-hidden="true">Trauk.</span>
+  </div>
+</div>
+
+<section class="blk" aria-labelledby="h-na2">
   <h2 class="sr" id="h-na2">„Nieko asmeniško 2“ merch nuotraukos</h2>
   <div class="g">
-    <button class="z" type="button" data-src="/merch/p/01.jpg" aria-haspopup="dialog"><img src="/merch/p/01.jpg" width="4096" height="4096" loading="lazy" decoding="async" alt="Juodi marškinėliai su raidėmis „NA2“ iš eurų banknotų."></button>
-    <button class="z" type="button" data-src="/merch/p/02.jpg" aria-haspopup="dialog"><img src="/merch/p/02.jpg" width="4096" height="4096" loading="lazy" decoding="async" alt="Juodas džemperis su gobtuvu iš nugaros naktį kieme, ant nugaros – daugiabutis."></button>
-    <button class="z" type="button" data-src="/merch/p/03.jpg" aria-haspopup="dialog"><img src="/merch/p/03.jpg" width="4096" height="4096" loading="lazy" decoding="async" alt="Kreminiai marškinėliai ilgomis rankovėmis su daugiabučio ir banknotų koliažu."></button>
-    <button class="z" type="button" data-src="/merch/p/04.jpg" aria-haspopup="dialog"><img src="/merch/p/04.jpg" width="4096" height="4096" loading="lazy" decoding="async" alt="Balti marškinėliai iš nugaros su užrašu „NIEKO ASMENIŠKO“."></button>
-    <button class="z" type="button" data-src="/merch/p/05.jpg" aria-haspopup="dialog"><img src="/merch/p/05.jpg" width="4096" height="4096" loading="lazy" decoding="async" alt="Dėvimi juodi marškinėliai: perbraukta „NA2“ ir raudonas užrašas „testing“."></button>
-    <button class="z" type="button" data-src="/merch/p/06.jpg" aria-haspopup="dialog"><img src="/merch/p/06.jpg" width="4096" height="4096" loading="lazy" decoding="async" alt="Dėvimi juodi marškinėliai su geltona juosta „NEPERŽENGTI · NIEKO ASMENIŠKO“."></button>
-    <button class="z" type="button" data-src="/merch/p/07.jpg" aria-haspopup="dialog"><img src="/merch/p/07.jpg" width="4096" height="4096" loading="lazy" decoding="async" alt="Juodi marškinėliai su mažu oranžiniu degančio automobilio ženklu apačioje."></button>
-    <button class="z" type="button" data-src="/merch/p/08.jpg" aria-haspopup="dialog"><img src="/merch/p/08.jpg" width="4096" height="4096" loading="lazy" decoding="async" alt="Mėlyna kepurė su baltu skaičiumi „112“."></button>
-    <button class="z" type="button" data-src="/merch/p/09.jpg" aria-haspopup="dialog"><img src="/merch/p/09.jpg" width="4096" height="4096" loading="lazy" decoding="async" alt="Rankogalio detalė: oranžinis dirželis su juoda etikete „NA2“."></button>
+    <button class="z" type="button" data-src="/merch/p/01.jpg" aria-haspopup="dialog"><img src="/merch/v/g/01.jpg" srcset="/merch/v/g/01.jpg 1024w, /merch/p/01.jpg 4096w" sizes="(max-width:700px) 50vw, 34vw" width="4096" height="4096" loading="lazy" decoding="async" alt="Juodi marškinėliai su raidėmis „NA2“ iš eurų banknotų."></button>
+    <button class="z" type="button" data-src="/merch/p/02.jpg" aria-haspopup="dialog"><img src="/merch/v/g/02.jpg" srcset="/merch/v/g/02.jpg 1024w, /merch/p/02.jpg 4096w" sizes="(max-width:700px) 50vw, 34vw" width="4096" height="4096" loading="lazy" decoding="async" alt="Juodas džemperis su gobtuvu iš nugaros naktį kieme, ant nugaros – daugiabutis."></button>
+    <button class="z" type="button" data-src="/merch/p/03.jpg" aria-haspopup="dialog"><img src="/merch/v/g/03.jpg" srcset="/merch/v/g/03.jpg 1024w, /merch/p/03.jpg 4096w" sizes="(max-width:700px) 50vw, 34vw" width="4096" height="4096" loading="lazy" decoding="async" alt="Kreminiai marškinėliai ilgomis rankovėmis su daugiabučio ir banknotų koliažu."></button>
+    <button class="z" type="button" data-src="/merch/p/04.jpg" aria-haspopup="dialog"><img src="/merch/v/g/04.jpg" srcset="/merch/v/g/04.jpg 1024w, /merch/p/04.jpg 4096w" sizes="(max-width:700px) 50vw, 34vw" width="4096" height="4096" loading="lazy" decoding="async" alt="Balti marškinėliai iš nugaros su užrašu „NIEKO ASMENIŠKO“."></button>
+    <button class="z" type="button" data-src="/merch/p/05.jpg" aria-haspopup="dialog"><img src="/merch/v/g/05.jpg" srcset="/merch/v/g/05.jpg 1024w, /merch/p/05.jpg 4096w" sizes="(max-width:700px) 50vw, 34vw" width="4096" height="4096" loading="lazy" decoding="async" alt="Dėvimi juodi marškinėliai: perbraukta „NA2“ ir raudonas užrašas „testing“."></button>
+    <button class="z" type="button" data-src="/merch/p/06.jpg" aria-haspopup="dialog"><img src="/merch/v/g/06.jpg" srcset="/merch/v/g/06.jpg 1024w, /merch/p/06.jpg 4096w" sizes="(max-width:700px) 50vw, 34vw" width="4096" height="4096" loading="lazy" decoding="async" alt="Dėvimi juodi marškinėliai su geltona juosta „NEPERŽENGTI · NIEKO ASMENIŠKO“."></button>
+    <button class="z" type="button" data-src="/merch/p/07.jpg" aria-haspopup="dialog"><img src="/merch/v/g/07.jpg" srcset="/merch/v/g/07.jpg 1024w, /merch/p/07.jpg 4096w" sizes="(max-width:700px) 50vw, 34vw" width="4096" height="4096" loading="lazy" decoding="async" alt="Juodi marškinėliai su mažu oranžiniu degančio automobilio ženklu apačioje."></button>
+    <button class="z" type="button" data-src="/merch/p/08.jpg" aria-haspopup="dialog"><img src="/merch/v/g/08.jpg" srcset="/merch/v/g/08.jpg 1024w, /merch/p/08.jpg 4096w" sizes="(max-width:700px) 50vw, 34vw" width="4096" height="4096" loading="lazy" decoding="async" alt="Mėlyna kepurė su baltu skaičiumi „112“."></button>
+    <button class="z" type="button" data-src="/merch/p/09.jpg" aria-haspopup="dialog"><img src="/merch/v/g/09.jpg" srcset="/merch/v/g/09.jpg 1024w, /merch/p/09.jpg 4096w" sizes="(max-width:700px) 50vw, 34vw" width="4096" height="4096" loading="lazy" decoding="async" alt="Rankogalio detalė: oranžinis dirželis su juoda etikete „NA2“."></button>
   </div>
 </section>
 
-<section class="sec alb" id="albumas" aria-labelledby="h-albumas">
+<section class="sec alb blk" id="albumas" aria-labelledby="h-albumas">
   <p class="m">Albumas</p>
   <h2 class="d alb__t" id="h-albumas"><span>„Nieko</span> <span>asmeniško 2“</span></h2>
   <div class="alb__r">
@@ -292,7 +452,7 @@ h1 .n{text-decoration-thickness:.07em;text-underline-offset:.11em}
 
 </main>
 
-<footer class="foot">
+<footer class="foot blk">
   <div class="foot__in">
     <p class="m">OG Version · Kaunas, Šilainiai</p>
     <div class="foot__r">
@@ -316,7 +476,7 @@ h1 .n{text-decoration-thickness:.07em;text-underline-offset:.11em}
 <script>
 (function(){
   var d=document,root=d.documentElement,v=d.getElementById('v'),vn=d.getElementById('vn'),vc=d.getElementById('vc');
-  var links=[].slice.call(d.querySelectorAll('button[data-src]')),vi=null,i=0,from=null,ts=-1e3;
+  var links=[],vi=null,i=0,from=null,ts=-1e3;
   function two(n){return (n<10?'0':'')+n}
   function show(k){
     i=(k+links.length)%links.length;
@@ -329,9 +489,11 @@ h1 .n{text-decoration-thickness:.07em;text-underline-offset:.11em}
     vn.textContent=two(i+1)+' / '+two(links.length);
     var s=d.createElement('span');s.className='sr';s.style.textTransform='none';s.textContent='. '+n.alt;vn.appendChild(s);
   }
-  function open(a){
-    from=a;show(links.indexOf(a));
+  function open(a,ret){
+    links=[].filter.call(d.querySelectorAll('button[data-src]'),function(b){return b.getClientRects().length});
+    from=ret||a;show(Math.max(0,links.indexOf(a)));
     root.classList.add('lock');
+    d.dispatchEvent(new CustomEvent('lb',{detail:{open:true}}));
     if(v.showModal) v.showModal(); else v.setAttribute('open','');
     vc.focus();
   }
@@ -340,7 +502,9 @@ h1 .n{text-decoration-thickness:.07em;text-underline-offset:.11em}
     root.classList.remove('lock');
     if(vi){v.removeChild(vi);vi=null}
     if(from){try{from.focus({preventScroll:true})}catch(e){from.focus()}from=null}
+    d.dispatchEvent(new CustomEvent('lb',{detail:{open:false}}));
   }
+  window.__lb={open:open};
   function close(){
     if(!v.hasAttribute('open')) return;
     if(v.close) v.close(); else {v.removeAttribute('open');done()}
