@@ -1,0 +1,6 @@
+raw/
+cache/
+frames/
+__pycache__/
+*.pyc
+*.part

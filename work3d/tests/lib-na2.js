@@ -65,6 +65,7 @@ function fill(p, kind, only) {
       if (only && !only.includes(key)) { el.replaceChildren(); return; }
       if (k === 'name') el.textContent = F.name; else lines(el, F[k]);
     });
+    window.dispatchEvent(new Event('resize'));          // the 3D page measures its blocks again
   }, [FILL[kind], only || null]);
 }
 

@@ -76,7 +76,7 @@ export const CFG = {
     dark: 2.08, line0: 2.20, line1: 2.40,
     infoLight: 0.15, infoBack: 0.45,
     stSide: 0.25, stItem: 0.65, stFree: 0.55,
-    stRail0: 0.90, stRail1: 1.15, stPhotos: 1.35,
+    stRail0: 0.90, stRail1: 1.15, stPhotos: 1.45,
     walk: 0.30,                           // least scroll for each leg of the walk back to the front
     minGap: 0.05
   },

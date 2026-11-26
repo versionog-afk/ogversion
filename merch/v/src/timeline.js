@@ -30,6 +30,7 @@ export const tl = {
   asleep: false, uiOff: false, typeOff: false,
   swOn: false,          // the colour swatches are shown
   info: [0, 0],         // document y of the info block's top and bottom edge
+  plate: false,         // the info block has values: it is a solid plate, not an empty stretch
   dipUntil: 0,
   first: true,
   onUi: null,           // (off) → controls: the range input is live in the hero only
@@ -49,6 +50,7 @@ export function layout() {
   const at = (id, t) => top(id) - S + t * S;
   const info = rectOf('info'), st = rectOf('stovas');
   tl.info = [info.top + y0, info.bottom + y0];
+  tl.plate = getComputedStyle(document.getElementById('info')).visibility !== 'hidden';
 
   const A = tl.A = {
     creepEnd: K.creepEnd * S, chestAt: K.chestAt * S, typeOff: K.typeOff * S,
@@ -161,12 +163,13 @@ function scrollPose(s, out) {
 
 /* The two dots sit at the bottom centre of the stage. They are shown while
    the figure is the subject and nothing of the tee is behind them: the
-   lights are on, the hem is clear above their row, the info block is not
-   passing over it, and the camera has not left for the photos. */
+   lights are on, the hem is clear above their row, no part of the info
+   plate (or of its soft lips) is on screen, and the camera has not left
+   for the photos. */
 function swatchesWanted(s) {
   const W = CFG.SWATCH, row = stage.rect.sw;
   if (tl.darkWant || tl.asleep || s >= tl.A.stPhotos) return false;
-  if (tl.info[0] - s - W.lip < row.y + row.h && tl.info[1] - s + W.lip > row.y) return false;
+  if (tl.plate && tl.info[0] - s - W.lip < stage.S && tl.info[1] - s + W.lip > 0) return false;
   return hemOnScreen(world.axis, world.hemR, world.T.min.y) < row.y - (tl.swOn ? W.off : W.on);
 }
 

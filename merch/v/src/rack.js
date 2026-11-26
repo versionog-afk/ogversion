@@ -12,7 +12,7 @@
                                    rail      0…1 how much of the rail is drawn
                                    railFrom, railTo   world x of the screen's left and right
                                              edge at the figure: the stretch the draw covers
-                                   inPhotos  applied scroll is past the start of the photos (stovas@1.35)
+                                   inPhotos  applied scroll is past the start of the photos (stovas@1.45)
      rack.u                      −1…8, the item the camera looks at (−1 = the figure).
                                  The timeline reads it for ITEM(u) every frame.
      rack.busy                   true while a flick, spring or swing is unsettled
@@ -29,7 +29,7 @@
    and scroll reclaiming uUser. Until then there is nothing to slide to: u
    stays −1 (the camera stays with the figure under the rail), and the
    #stovas block in index.html ends after that beat. With the panels built,
-   u follows uScroll (and the hand), and #stovas grows to 2.75 screens so
+   u follows uScroll (and the hand), and #stovas grows to 2.85 screens so
    that the photos get their 1.40 screens of scroll. */
 import { Mesh, BoxGeometry, MeshBasicMaterial } from 'three';
 import { CFG } from './config.js';
