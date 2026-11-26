@@ -1,4 +1,4 @@
-/* Loading: byte-progress fetches, abort, GLB parse, print bitmap.
+/* Loading: byte-progress fetches, abort, GLB parse, the two print bitmaps.
    (The lazy queue for the rack photos is added with the rack.) */
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { MeshoptDecoder } from 'three/addons/libs/meshopt_decoder.module.js';
@@ -30,10 +30,10 @@ async function fetchBytes(url, expected, onBytes, signal) {
   return out.buffer;
 }
 
-/* Loads the model and the print together.
+/* Loads the model and both prints together.
    onProgress(0..1) counts app.js itself as already received. */
 export async function loadAssets(onProgress, signal) {
-  const total = BYTES.js + BYTES.glb + BYTES.print;
+  const total = BYTES.js + BYTES.glb + BYTES.front + BYTES.back;
   let got = BYTES.js;
   let shown = 0;
   const add = n => {
@@ -43,23 +43,25 @@ export async function loadAssets(onProgress, signal) {
   };
   add(0);
 
-  const [glbBuf, printBuf] = await Promise.all([
+  const [glbBuf, frontBuf, backBuf] = await Promise.all([
     fetchBytes(URLS.glb, BYTES.glb, add, signal),
-    fetchBytes(URLS.print, BYTES.print, add, signal)
+    fetchBytes(URLS.front, BYTES.front, add, signal),
+    fetchBytes(URLS.back, BYTES.back, add, signal)
   ]);
 
   const loader = new GLTFLoader();
   loader.setMeshoptDecoder(MeshoptDecoder);
-  const [gltf, print] = await Promise.all([
+  const [gltf, front, back] = await Promise.all([
     loader.parseAsync(glbBuf, ''),
-    decodeImage(printBuf, 'image/webp')
+    decodeImage(frontBuf, 'image/webp'),
+    decodeImage(backBuf, 'image/webp')
   ]);
   if (signal && signal.aborted) throw new Error('aborted');
   onProgress(1);
-  return { gltf, print };
+  return { gltf, front, back };
 }
 
-/* Decodes to an ImageBitmap with straight alpha and no flip (the print's
+/* Decodes to an ImageBitmap with straight alpha and no flip (a print's
    v = 0 is its top row, matching texture.flipY = false). */
 export async function decodeImage(buffer, type) {
   const blob = new Blob([buffer], { type });

@@ -1,35 +1,39 @@
-/* Scene: environment, three lights, cloth and print materials, the lit-47
-   overlay, the red line under the printed 47, and uvToWorld.
+/* Scene: environment, three lights, the figure's materials (cloth, plaster,
+   the fade of the legs into the dark), the two prints, the lit copy of the
+   back print, the red line under its caption, and uvToWorld.
 
    Graph:
      scene (environment, no background)
-     ├ key, rimL, rimR                fixed in the world
-     └ teeSwing (pendulum pivot) ─ teeYaw (axis through C) ─ content
-                                       └ model, printLit, line47
+     ├ rig ─ key, rimL, rimR        the lamps; the rig turns with the camera's azimuth
+     └ yaw (vertical axis through the figure) ─ content (model coordinates)
+                                                 └ model, printLit, lineRed
 */
 import {
-  Scene, Group, Box3, Vector3, Color, Matrix4, DirectionalLight, PMREMGenerator,
+  Scene, Group, Box3, Vector2, Vector3, Color, DirectionalLight, PMREMGenerator,
   Mesh, MeshBasicMaterial, MeshStandardMaterial, MeshPhysicalMaterial,
-  BoxGeometry, PlaneGeometry, BackSide, FrontSide, DoubleSide,
-  CanvasTexture, Texture, SRGBColorSpace, LinearFilter
+  BoxGeometry, PlaneGeometry, BufferGeometry, BufferAttribute, BackSide, FrontSide, DoubleSide,
+  Texture, SRGBColorSpace
 } from 'three';
-import { CFG, lerp } from './config.js';
+import { CFG, ART, lerp } from './config.js';
 
 export const world = {
   scene: null,
-  teeSwing: null, teeYaw: null, content: null,
+  rig: null, yaw: null, content: null,
   key: null, rimL: null, rimR: null,
-  fabric: [], print: null, printLit: null, line47: null, lineLength: 0,
-  printTex: null,
+  /* meshes by class */
+  groups: { printFront: [], printBack: [], hair: [], pants: [], shoes: [], body: [], tee: [], other: [] },
+  printFront: null, printBack: null, printLit: null, lineRed: null,
+  frontTex: null, backTex: null,
   /* measured from the model at load, never hard-coded */
-  C: new Vector3(),          // fabric bbox centre
-  size: new Vector3(),       // fabric bbox size
-  top: 0, bottom: 0,
-  P: new Vector3(),          // print bbox centre
-  printSize: new Vector3(),
-  A47: new Vector3(),        // centre of the printed "47"
-  Yr: 0,                     // rail height
-  pivotY: 0
+  F: new Box3(),             // everything
+  T: new Box3(),             // the tee
+  PF: new Box3(),            // chest print
+  PB: new Box3(),            // back print
+  TOP: new Box3(),           // head to just below the hem, as wide and deep as the tee
+  C: new Vector3(),          // centre of TOP
+  axis: new Vector3(),       // the yaw axis: centre of F in x and z
+  printR: 0.15,              // how far the prints are from the yaw axis
+  Yr: 0                      // rail height
 };
 
 const tipasL = new Color(CFG.LIGHT.rimL.tipas[0]), stendasL = new Color(CFG.LIGHT.rimL.stendas[0]);
@@ -60,68 +64,103 @@ export function buildEnvironment(renderer) {
 
 /* ---- materials -------------------------------------------------------- */
 
-/* Black cotton. A matte black surface gives almost nothing back, so one
-   shader patch adds a view-angle term to the diffuse light: edges and fold
-   flanks pick up the rim lights and the shirt separates from the void. */
-function clothMaterial(src, tier) {
-  const C = CFG.CLOTH;
-  const base = {
-    color: C.color, roughness: C.roughness, metalness: 0,
+/* heights (world y) between which the legs fade into the dark; set once the model is measured */
+const fade = { value: new Vector2(CFG.FADE[0], CFG.FADE[1]) };
+
+/* Two small shader patches, combined as a material needs them.
+
+   cloth: black cotton gives almost nothing back, so a view-angle term is
+          added to the diffuse light: edges and fold flanks pick up the rim
+          lights and the garment separates from the void.
+          uCloth = (gain on all diffuse light, extra gain at grazing angles, its falloff power)
+   fade:  everything below the hem sinks into the black: the outgoing light
+          is multiplied by smoothstep(uFade.x, uFade.y, world y). */
+function patch(m, cloth, fades) {
+  const u = cloth ? (m.userData.cloth = { value: new Vector3(cloth.base, cloth.rim, cloth.rimPow) }) : null;
+  m.onBeforeCompile = shader => {
+    let vs = shader.vertexShader, fs = shader.fragmentShader;
+    if (u) {
+      shader.uniforms.uCloth = u;
+      const out = 'vec3 outgoingLight = totalDiffuse + totalSpecular + totalEmissiveRadiance;';
+      fs = 'uniform vec3 uCloth;\n' + fs.replace(out, out +
+        '\noutgoingLight += totalDiffuse * ( uCloth.x + uCloth.y * pow( 1.0 - saturate( dot( normal, normalize( vViewPosition ) ) ), uCloth.z ) );');
+    }
+    if (fades) {
+      shader.uniforms.uFade = fade;
+      vs = 'varying float vFadeY;\n' + vs.replace('#include <project_vertex>',
+        '#include <project_vertex>\nvFadeY = ( modelMatrix * vec4( transformed, 1.0 ) ).y;');
+      fs = 'uniform vec2 uFade;\nvarying float vFadeY;\n' + fs.replace('#include <opaque_fragment>',
+        'outgoingLight *= smoothstep( uFade.x, uFade.y, vFadeY );\n#include <opaque_fragment>');
+    }
+    shader.vertexShader = vs;
+    shader.fragmentShader = fs;
+  };
+  /* programs are cached by this key: the variants must not share one */
+  m.customProgramCacheKey = () => 'fig' + (u ? '-cloth' : '') + (fades ? '-fade' : '');
+  return m;
+}
+
+/* what every replacement keeps from the model's own material */
+function keep(src) {
+  return {
     side: src && src.side !== undefined ? src.side : FrontSide,
     normalMap: (src && src.normalMap) || null,
     aoMap: (src && src.aoMap) || null
   };
-  /* desktop adds physical sheen on top; the rim patch below is shared by every tier */
-  const m = tier === 0
-    ? new MeshPhysicalMaterial(Object.assign(base, { sheen: C.sheen, sheenRoughness: C.sheenRoughness, sheenColor: new Color(C.sheenColor) }))
-    : new MeshStandardMaterial(base);
-  /* x: gain on all diffuse light, y: extra gain at grazing angles, z: its falloff power */
-  const u = m.userData.cloth = { value: new Vector3(C.base, C.rim, C.rimPow) };
-  m.onBeforeCompile = shader => {
-    shader.uniforms.uCloth = u;
-    shader.fragmentShader = 'uniform vec3 uCloth;\n' + shader.fragmentShader.replace(
-      'vec3 outgoingLight = totalDiffuse + totalSpecular + totalEmissiveRadiance;',
-      'vec3 outgoingLight = totalDiffuse + totalSpecular + totalEmissiveRadiance;\n' +
-      'outgoingLight += totalDiffuse * ( uCloth.x + uCloth.y * pow( 1.0 - saturate( dot( normal, normalize( vViewPosition ) ) ), uCloth.z ) );'
-    );
-  };
+}
+function carry(src, m) {
   if (src && src.normalMap && src.normalScale) m.normalScale.copy(src.normalScale);
   if (src && src.aoMap) m.aoMapIntensity = src.aoMapIntensity;
   return m;
 }
 
-/* White rectangle over the printed "47", black elsewhere: the alpha of the
-   unlit copy of the print that stays visible when the lights go out. */
-function maskTexture() {
-  const M = CFG.MASK, U = CFG.UV47;
-  const c = document.createElement('canvas');
-  c.width = M.w; c.height = M.h;
-  const g = c.getContext('2d');
-  g.fillStyle = '#000';
-  g.fillRect(0, 0, M.w, M.h);
-  const x0 = (U.u0 - M.grow) * M.w, x1 = (U.u1 + M.grow) * M.w, y0 = (U.v0 - M.grow) * M.h, y1 = (U.v1 + M.grow) * M.h;
-  /* feather: stacked translucent rects, the outermost one M.feather px out */
-  const steps = 4;
-  for (let i = 0; i < steps; i++) {
-    const out = M.feather * (1 - i / (steps - 1));
-    g.fillStyle = 'rgba(255,255,255,' + (1 / (steps - i)).toFixed(3) + ')';
-    g.fillRect(x0 - out, y0 - out, x1 - x0 + 2 * out, y1 - y0 + 2 * out);
-  }
-  const t = new CanvasTexture(c);
-  t.flipY = false;
-  t.generateMipmaps = false;
-  t.minFilter = t.magFilter = LinearFilter;
-  return t;
+/* Tee and trousers. Desktop (tier 0) adds physical sheen on top; the rim patch is shared by every tier. */
+function clothMaterial(src, tier, C, fades) {
+  const base = Object.assign(keep(src), { color: C.color, roughness: C.roughness, metalness: 0 });
+  const m = tier === 0
+    ? new MeshPhysicalMaterial(Object.assign(base, { sheen: C.sheen, sheenRoughness: C.sheenRoughness, sheenColor: new Color(C.sheenColor) }))
+    : new MeshStandardMaterial(base);
+  return patch(carry(src, m), C, fades);
+}
+
+/* Body and hair: one matte plaster. The figure is a sculpture wearing the tee. */
+function plasterMaterial(src, darker, fades) {
+  const P = CFG.PLASTER, k = keep(src);
+  const m = new MeshStandardMaterial({ color: new Color(P.color).multiplyScalar(1 - darker), roughness: P.roughness, metalness: 0, side: k.side, normalMap: k.normalMap });
+  if (k.normalMap && src.normalScale) m.normalScale.copy(src.normalScale);
+  return patch(m, null, fades);
+}
+
+function shoeMaterial(src) {
+  const m = new MeshStandardMaterial({ color: CFG.SHOES.color, roughness: CFG.SHOES.roughness, metalness: 0, side: keep(src).side });
+  return patch(m, null, true);
+}
+
+function printTexture(image, renderer) {
+  const tex = new Texture(image);
+  tex.colorSpace = SRGBColorSpace;
+  tex.flipY = false;                      // v = 0 is the top row of the print
+  tex.anisotropy = Math.min(8, renderer.capabilities.getMaxAnisotropy());
+  tex.needsUpdate = true;
+  return tex;
+}
+function printMaterial(tex) {
+  return new MeshStandardMaterial({
+    map: tex, transparent: true, roughness: CFG.PRINT.roughness, metalness: 0, side: FrontSide,
+    depthWrite: false, polygonOffset: true, polygonOffsetFactor: -4, polygonOffsetUnits: -4,
+    emissive: 0xffffff, emissiveMap: tex, emissiveIntensity: 0
+  });
 }
 
 /* ---- uv → world ------------------------------------------------------- */
 
-/* Finds the Print triangle that contains a UV and returns the world
-   position and normal there. Meshopt quantisation moves scale into node
-   transforms, so positions are always taken through matrixWorld. */
-export function uvToWorld(u, v, outP, outN) {
-  const mesh = world.print, g = mesh.geometry;
+/* Finds the triangle of a print mesh that contains a UV and returns the
+   world position and normal there. Meshopt quantisation moves scale into
+   node transforms, so positions are always taken through matrixWorld. */
+export function uvToWorld(mesh, u, v, outP, outN) {
+  const g = mesh.geometry;
   const pos = g.attributes.position, uv = g.attributes.uv, nor = g.attributes.normal, idx = g.index;
+  if (!uv) return false;
   const n = idx ? idx.count : pos.count;
   let best = null, bestErr = Infinity;
   for (let i = 0; i < n; i += 3) {
@@ -150,113 +189,153 @@ export function uvToWorld(u, v, outP, outN) {
       nor.getY(a) * wa + nor.getY(b) * wb + nor.getY(c) * wc,
       nor.getZ(a) * wa + nor.getZ(b) * wb + nor.getZ(c) * wc
     ).transformDirection(mesh.matrixWorld);
-    else outN.set(0, 0, 1);
+    else outN.set(0, 0, -1);
   }
   return true;
 }
 
+/* ---- the red line ------------------------------------------------------ */
+
+/* A ribbon that lies on the cloth under the caption of the back print: it
+   is sampled along the print's own surface, so it follows the curve of the
+   back and stays glued to it when the figure turns. `along` runs 0 → 1 from
+   its left end (as seen from behind); the fragment shader cuts it off at
+   uDraw, which is how the line draws. */
+function buildLine(mesh, box) {
+  const K = CFG.LINE, n = K.steps, v = Math.min(0.995, box.v1 + K.dv);
+  const P = [], N = [];
+  for (let i = 0; i <= n; i++) {
+    const p = new Vector3(), nn = new Vector3();
+    if (!uvToWorld(mesh, lerp(box.u0, box.u1, i / n), v, p, nn)) throw new Error('model: back print UVs do not cover the caption');
+    P.push(p); N.push(nn.normalize());
+  }
+  const pos = new Float32Array((n + 1) * 6), along = new Float32Array((n + 1) * 2), index = [];
+  const t = new Vector3(), up = new Vector3(), q = new Vector3();
+  for (let i = 0; i <= n; i++) {
+    t.subVectors(P[Math.min(n, i + 1)], P[Math.max(0, i - 1)]).normalize();
+    up.crossVectors(N[i], t).normalize();
+    q.copy(P[i]).addScaledVector(N[i], K.lift);
+    world.content.worldToLocal(q);
+    pos.set([q.x - up.x * K.height / 2, q.y - up.y * K.height / 2, q.z - up.z * K.height / 2,
+      q.x + up.x * K.height / 2, q.y + up.y * K.height / 2, q.z + up.z * K.height / 2], i * 6);
+    along[i * 2] = along[i * 2 + 1] = i / n;
+    if (i < n) { const a = i * 2; index.push(a, a + 2, a + 1, a + 1, a + 2, a + 3); }
+  }
+  const geo = new BufferGeometry();
+  geo.setAttribute('position', new BufferAttribute(pos, 3));
+  geo.setAttribute('along', new BufferAttribute(along, 1));
+  geo.setIndex(index);
+
+  const mat = new MeshBasicMaterial({
+    color: K.color, transparent: true, toneMapped: false, depthWrite: false, opacity: 0, side: DoubleSide,
+    polygonOffset: true, polygonOffsetFactor: -8, polygonOffsetUnits: -8
+  });
+  const draw = mat.userData.draw = { value: 0 };
+  mat.onBeforeCompile = shader => {
+    shader.uniforms.uDraw = draw;
+    shader.vertexShader = 'attribute float along;\nvarying float vAlong;\n' +
+      shader.vertexShader.replace('#include <begin_vertex>', '#include <begin_vertex>\nvAlong = along;');
+    shader.fragmentShader = 'uniform float uDraw;\nvarying float vAlong;\n' +
+      shader.fragmentShader.replace('#include <clipping_planes_fragment>', 'if ( vAlong > uDraw ) discard;\n#include <clipping_planes_fragment>');
+  };
+  mat.customProgramCacheKey = () => 'line';
+  const line = new Mesh(geo, mat);
+  line.renderOrder = 4;
+  line.visible = false;
+  line.frustumCulled = false;
+  return line;
+}
+
 /* ---- build ------------------------------------------------------------ */
 
-export function buildScene(gltf, printImage, renderer, tier) {
+function classOf(o) {
+  const id = o.name + ' ' + ((o.material && o.material.name) || '') + ' ' + ((o.parent && o.parent.name) || '');
+  const hit = CFG.CLASSES.find(c => c[1].test(o.name)) || CFG.CLASSES.find(c => c[1].test(id));
+  return hit ? hit[0] : 'other';
+}
+
+export function buildScene(gltf, images, renderer, tier) {
   const scene = world.scene = new Scene();
   scene.environment = buildEnvironment(renderer);
   scene.environmentIntensity = CFG.LIGHT.env;
 
   /* lights */
-  const L = CFG.LIGHT;
-  const light = (hex, i, p) => { const l = new DirectionalLight(hex, i); l.position.set(p[0], p[1], p[2]); scene.add(l); return l; };
+  const L = CFG.LIGHT, rig = world.rig = new Group();
+  const light = (hex, i, p) => { const l = new DirectionalLight(hex, i); l.position.set(p[0], p[1], p[2]); rig.add(l); return l; };
   world.key = light(L.key.color, L.key.tipas, L.key.pos);
   world.rimL = light(L.rimL.tipas[0], L.rimL.tipas[1], L.rimL.pos);
   world.rimR = light(L.rimR.tipas[0], L.rimR.tipas[1], L.rimR.pos);
+  scene.add(rig);
 
-  /* model: split into fabric and print the way the reference viewer does */
-  const model = gltf.scene;
+  /* model: sort the meshes into classes the way the reference viewer does */
+  const model = gltf.scene, G = world.groups;
+  for (const k in G) G[k] = [];
   model.updateMatrixWorld(true);
-  const prints = [];
-  model.traverse(o => {
-    if (!o.isMesh) return;
-    const isPrint = /print/i.test(o.name) || /print/i.test((o.material && o.material.name) || '');
-    (isPrint ? prints : world.fabric).push(o);
-  });
-  if (!prints.length || !world.fabric.length) throw new Error('model: fabric or Print mesh missing');
-  world.print = prints[0];
+  model.traverse(o => { if (o.isMesh) G[classOf(o)].push(o); });
+  if (G.printFront.length !== 1 || G.printBack.length !== 1 || !G.tee.length) throw new Error('model: needs one PrintFront, one PrintBack and a tee mesh');
+  world.printFront = G.printFront[0];
+  world.printBack = G.printBack[0];
 
   /* measurements */
-  const fb = new Box3(), pb = new Box3();
-  world.fabric.forEach(m => fb.expandByObject(m));
-  prints.forEach(m => pb.expandByObject(m));
-  fb.getCenter(world.C); fb.getSize(world.size);
-  pb.getCenter(world.P); pb.getSize(world.printSize);
-  world.top = fb.max.y; world.bottom = fb.min.y;
-  world.Yr = world.top + CFG.RAIL.above;
-  world.pivotY = world.top + CFG.SWING.pivot;
+  const box = (list, out) => { out.makeEmpty(); list.forEach(m => out.expandByObject(m)); return out; };
+  const F = world.F.setFromObject(model), T = box(G.tee, world.T), PF = box(G.printFront, world.PF), PB = box(G.printBack, world.PB);
+  world.TOP.min.set(T.min.x, T.min.y - CFG.TOP_BELOW_HEM, T.min.z);
+  world.TOP.max.set(T.max.x, F.max.y, T.max.z);
+  world.TOP.getCenter(world.C);
+  world.axis.set((F.min.x + F.max.x) / 2, 0, (F.min.z + F.max.z) / 2);
+  world.Yr = F.max.y + CFG.RAIL.above;
+  const c = new Vector3(), r = b => { b.getCenter(c); return Math.hypot(c.x - world.axis.x, c.z - world.axis.z); };
+  world.printR = Math.max(0.05, r(PF), r(PB));
+  fade.value.set(F.min.y + CFG.FADE[0], F.min.y + CFG.FADE[1]);
 
-  /* print texture: sRGB, v = 0 at the top */
-  const tex = world.printTex = new Texture(printImage);
-  tex.colorSpace = SRGBColorSpace;
-  tex.flipY = false;
-  tex.anisotropy = Math.min(8, renderer.capabilities.getMaxAnisotropy());
-  tex.needsUpdate = true;
+  /* materials: one replacement per class and source material */
+  const old = new Set();
+  const dress = (list, make) => {
+    const made = new Map();
+    for (const m of list) {
+      const src = m.material;
+      old.add(src);
+      if (!made.has(src)) made.set(src, make(src));
+      m.material = made.get(src);
+    }
+  };
+  dress(G.tee, src => clothMaterial(src, tier, CFG.CLOTH, false));
+  dress(G.pants.concat(G.other), src => clothMaterial(src, tier, CFG.PANTS, true));
+  dress(G.body, src => plasterMaterial(src, 0, true));
+  dress(G.hair, src => plasterMaterial(src, CFG.PLASTER.hairDarker, false));
+  dress(G.shoes, shoeMaterial);
+  world.frontTex = printTexture(images.front, renderer);
+  world.backTex = printTexture(images.back, renderer);
+  dress(G.printFront, () => printMaterial(world.frontTex));
+  dress(G.printBack, () => printMaterial(world.backTex));
+  world.printFront.renderOrder = world.printBack.renderOrder = 2;
+  old.forEach(src => { if (src && src.dispose) src.dispose(); });
 
-  /* materials */
-  const cloth = new Map();
-  for (const m of world.fabric) {
-    const src = m.material;
-    if (!cloth.has(src)) cloth.set(src, clothMaterial(src, tier));
-    m.material = cloth.get(src);
-    if (src && src.dispose) src.dispose();
-  }
-  const srcPrint = world.print.material;
-  const printMat = new MeshStandardMaterial({
-    map: tex, transparent: true, roughness: CFG.PRINT.roughness, metalness: 0, side: FrontSide,
-    depthWrite: false, polygonOffset: true, polygonOffsetFactor: -4, polygonOffsetUnits: -4,
-    emissive: 0xffffff, emissiveMap: tex, emissiveIntensity: 0,
-    normalMap: (srcPrint && srcPrint.normalMap) || null
-  });
-  for (const m of prints) { m.material = printMat; m.renderOrder = 2; }
-  if (srcPrint && srcPrint.dispose) srcPrint.dispose();
-
-  /* the 47 that stays lit: an unlit copy of the print, masked to the digits */
-  const lit = world.printLit = new Mesh(world.print.geometry, new MeshBasicMaterial({
-    map: tex, alphaMap: maskTexture(), transparent: true, toneMapped: false, depthWrite: false,
+  /* the map that stays lit: an unlit copy of the back print */
+  const pb = world.printBack;
+  const lit = world.printLit = new Mesh(pb.geometry, new MeshBasicMaterial({
+    map: world.backTex, transparent: true, toneMapped: false, depthWrite: false,
     polygonOffset: true, polygonOffsetFactor: -6, polygonOffsetUnits: -6, opacity: 0
   }));
-  lit.position.copy(world.print.position);
-  lit.quaternion.copy(world.print.quaternion);
-  lit.scale.copy(world.print.scale);
+  lit.position.copy(pb.position);
+  lit.quaternion.copy(pb.quaternion);
+  lit.scale.copy(pb.scale);
   lit.renderOrder = 3;
   lit.visible = false;
-  world.print.parent.add(lit);
+  pb.parent.add(lit);
 
-  /* the red line under the printed 47 */
-  const U = CFG.UV47, K = CFG.LINE47;
-  const a = new Vector3(), b = new Vector3(), na = new Vector3(), nb = new Vector3();
-  if (!uvToWorld(U.u0, K.v, a, na) || !uvToWorld(U.u1, K.v, b, nb)) throw new Error('model: print UVs do not cover the 47');
-  uvToWorld((U.u0 + U.u1) / 2, (U.v0 + U.v1) / 2, world.A47, null);
-  const x = new Vector3().subVectors(b, a);
-  world.lineLength = x.length();
-  x.normalize();
-  const n = na.add(nb).normalize();
-  const y = new Vector3().crossVectors(n, x).normalize();
-  n.crossVectors(x, y).normalize();
-  const line = world.line47 = new Mesh(
-    new PlaneGeometry(1, 1).translate(0.5, 0, 0),           // origin at its left end
-    new MeshBasicMaterial({ color: CFG.RAIL.color, transparent: true, toneMapped: false, depthWrite: false, opacity: 0, polygonOffset: true, polygonOffsetFactor: -8, polygonOffsetUnits: -8 })
-  );
-  line.quaternion.setFromRotationMatrix(new Matrix4().makeBasis(x, y, n));
-  line.position.copy(a).addScaledVector(n, K.lift);
-  line.scale.set(0.0001, K.height, 1);
-  line.renderOrder = 4;
-  line.visible = false;
-
-  /* pendulum pivot → yaw axis through C → content in model coordinates */
-  const swing = world.teeSwing = new Group(), yaw = world.teeYaw = new Group(), content = world.content = new Group();
-  swing.position.set(world.C.x, world.pivotY, world.C.z);
-  content.position.set(-world.C.x, -world.pivotY, -world.C.z);
-  content.add(model, line);
+  /* yaw axis through the figure → content in model coordinates */
+  const yaw = world.yaw = new Group(), content = world.content = new Group();
+  yaw.position.copy(world.axis);
+  content.position.copy(world.axis).negate();
+  content.add(model);
   yaw.add(content);
-  swing.add(yaw);
-  scene.add(swing);
+  scene.add(yaw);
+  scene.updateMatrixWorld(true);
+
+  /* the red line under the caption */
+  world.lineRed = buildLine(pb, ART.back.captionBox);
+  content.add(world.lineRed);
 
   return world;
 }
@@ -266,9 +345,14 @@ export function buildScene(gltf, printImage, renderer, tier) {
 /* m: 0 "Tipas" (bone rims) … 1 "Stendas" (purple and pink rims)
    dark: 0 lights on … 1 lights out
    rims, key: extra multipliers (the rack beat dims them)
-   line: 0…1 how much of the red line under the printed 47 is drawn */
-export function setLights(m, dark, rims, key, line, tier) {
+   line: 0…1 how much of the red line under the caption is drawn
+   az: the camera's azimuth in radians. The lamps and the environment turn
+       with it, so the walk round the figure keeps key and rims where the
+       hero has them and the back is lit like the front. Turning the figure
+       by hand still moves it under fixed lamps. */
+export function setLights(m, dark, rims, key, line, tier, az) {
   const L = CFG.LIGHT;
+  world.rig.rotation.y = world.scene.environmentRotation.y = az * L.follow;
   world.key.intensity = lerp(L.key.tipas, L.key.stendas, m) * key * lerp(1, L.keyDark, dark);
   const rimDim = rims * lerp(1, L.rimDark, dark);
   world.rimL.color.lerpColors(tipasL, stendasL, m);
@@ -276,14 +360,14 @@ export function setLights(m, dark, rims, key, line, tier) {
   world.rimR.color.lerpColors(tipasR, stendasR, m);
   world.rimR.intensity = tier >= 3 ? 0 : lerp(L.rimR.tipas[1], L.rimR.stendas[1], m) * rimDim;
   world.scene.environmentIntensity = lerp(L.env, L.envDark, dark);
-  world.print.material.emissiveIntensity = L.emissive * m * (1 - dark);
+  world.printFront.material.emissiveIntensity = world.printBack.material.emissiveIntensity = L.emissive * m * (1 - dark);
 
   const on = dark > 0.004;
   world.printLit.visible = on;
   world.printLit.material.opacity = dark;
-  world.line47.visible = on && line > 0.001;
-  world.line47.material.opacity = dark;
-  world.line47.scale.x = Math.max(0.0001, world.lineLength * line);
+  world.lineRed.visible = on && line > 0.001;
+  world.lineRed.material.opacity = dark;
+  world.lineRed.material.userData.draw.value = line;
 }
 
 export function disposeScene() {

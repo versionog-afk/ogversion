@@ -1,7 +1,7 @@
-/* Spin: pointer arbitration between scrolling and spinning, the shirt's yaw
-   physics, and the pendulum that gives it weight.
+/* Spin: pointer arbitration between scrolling and spinning, and the yaw
+   physics of the figure (it stands: no pendulum, no lean).
 
-   Flick1D is the drag / inertia / snap core. The shirt's yaw uses it here;
+   Flick1D is the drag / inertia / snap core. The figure's yaw uses it here;
    the rack uses a second instance with its own numbers (see rack.js). */
 import { CFG, clamp } from './config.js';
 
@@ -71,22 +71,18 @@ export class Flick1D {
   }
 }
 
-/* ---- the shirt -------------------------------------------------------- */
+/* ---- the figure ------------------------------------------------------- */
 
-const P = CFG.SPIN, W = CFG.SWING;
+const P = CFG.SPIN;
 
 export const spin = {
   core: null,
-  close: false,           // camera is close: front only, ±35°
+  close: false,           // held to one side: only ±35° round `centre`
+  centre: 0,              // 0 the front, 180 the back
   dragBase: 0,            // unresisted yaw while dragging in close-up
-  swingX: 0, swingXv: 0,  // pendulum, sideways (degrees)
-  swingZ: 0, swingZv: 0,  // pendulum, forward
-  vis: 0, visPrev: 0,     // smoothed angular velocity that drives the pendulum
-  lastX: 0,
   calm: false,
   onSettle: null,         // (detent | null) → hud
-  onInput: null,          // any hand input → loop wake, sway timer
-  turnsHook: null         // reserved for the 47-turns moment
+  onInput: null           // any hand input → loop wake, sway timer
 };
 
 const mod360 = a => ((a % 360) + 360) % 360;
@@ -94,9 +90,8 @@ const mod360 = a => ((a % 360) + 360) % 360;
 const nearestTurn = (x, offset) => Math.round((x - offset) / 360) * 360 + offset;
 
 function nearestDetent(x) {
-  const front = nearestTurn(x, 0);
-  if (spin.close) return front;
-  const back = nearestTurn(x, 180);
+  if (spin.close) return nearestTurn(x, spin.centre);
+  const front = nearestTurn(x, 0), back = nearestTurn(x, 180);
   return Math.abs(x - front) <= Math.abs(x - back) ? front : back;
 }
 
@@ -122,6 +117,11 @@ export function detent() {
   if (Math.abs(a - 180) < 0.5) return 180;
   return null;
 }
+/* which side is nearer the camera right now, or where the figure is heading: 0 or 180 */
+export function facing() {
+  const c = spin.core, a = mod360(c.mode === 'spring' || c.mode === 'flick' ? c.D : c.x);
+  return a > 90 && a < 270 ? 180 : 0;
+}
 
 export function grab() {
   const c = spin.core;
@@ -134,9 +134,9 @@ export function drag(deg) {
   const c = spin.core;
   spin.dragBase += deg;
   if (spin.close) {
-    /* past ±35° from the front the shirt only follows a third of the way */
-    const front = nearestTurn(spin.dragBase, 0), off = spin.dragBase - front, lim = P.limit;
-    c.x = front + (Math.abs(off) <= lim ? off : Math.sign(off) * (lim + (Math.abs(off) - lim) * P.beyond));
+    /* past ±35° from the held side the figure only follows a third of the way */
+    const mid = nearestTurn(spin.dragBase, spin.centre), off = spin.dragBase - mid, lim = P.limit;
+    c.x = mid + (Math.abs(off) <= lim ? off : Math.sign(off) * (lim + (Math.abs(off) - lim) * P.beyond));
   } else {
     c.x = spin.dragBase;
   }
@@ -144,7 +144,7 @@ export function drag(deg) {
 
 export function release(v) {
   const c = spin.core;
-  if (spin.close) { c.v = clamp(v, -P.vClose, P.vClose); c.springTo(nearestTurn(c.x, 0), P.zetaClose); }
+  if (spin.close) { c.v = clamp(v, -P.vClose, P.vClose); c.springTo(nearestTurn(c.x, spin.centre), P.zetaClose); }
   else c.release(v);
 }
 
@@ -155,57 +155,29 @@ export function turnTo(deg, zeta) {
   c.springTo(c.x + delta, zeta);
 }
 
-export function poke() { if (!spin.calm) spin.swingZv += W.poke; }
-
-/* Called when the camera crosses the close-up distance. */
-export function setClose(on) {
-  if (on === spin.close) return;
+/* Called every frame by the timeline: while the story or "Iš arti" holds the
+   figure, it springs to that side and the hand only wiggles it. */
+export function setClose(on, centre) {
+  if (on === spin.close && (!on || centre === spin.centre)) return;
   spin.close = on;
+  spin.centre = centre;
   const c = spin.core;
   if (on && c.mode !== 'drag') {
-    const front = nearestTurn(c.x, 0);
-    if (c.mode !== 'rest' || Math.abs(c.x - front) > 0.01) c.springTo(front, P.zetaClose);
+    const mid = nearestTurn(c.x, centre);
+    if (c.mode !== 'rest' || Math.abs(c.x - mid) > 0.01) c.springTo(mid, P.zetaClose);
   }
   if (c.mode === 'drag') spin.dragBase = c.x;
 }
 
-/* One frame: fixed 1/120 s steps for the yaw and the pendulum.
-   scrollAcc is the applied scroll's acceleration in px/s². */
-export function stepSpin(dt, scrollAcc) {
+/* One frame: fixed 1/120 s steps for the yaw. */
+export function stepSpin(dt) {
   const c = spin.core, h = CFG.STEP;
   const steps = Math.min(CFG.MAX_STEPS, Math.max(1, Math.round(dt / h)));
-
-  /* angular velocity as the pendulum feels it: measured while dragging */
-  if (c.mode === 'drag') {
-    const now = (c.x - spin.lastX) / Math.max(dt, 1e-3);
-    spin.vis += (now - spin.vis) * (1 - Math.exp(-dt / 0.05));
-  }
-  spin.lastX = c.x;
-
   for (let i = 0; i < steps; i++) c.step(h);
-  if (c.mode !== 'drag') spin.vis = c.v;
-  const acc = clamp((spin.vis - spin.visPrev) / Math.max(dt, 1e-3), -20000, 20000);
-  spin.visPrev = spin.vis;
-
-  if (spin.calm) { spin.swingX = spin.swingZ = spin.swingXv = spin.swingZv = 0; return; }
-  const w = 2 * Math.PI * W.hz, w2 = w * w, c2 = 2 * W.zeta * w;
-  const ax = W.fromYaw * acc, az = W.fromScroll * clamp(scrollAcc, -60000, 60000);
-  for (let i = 0; i < steps; i++) {
-    spin.swingXv += (-w2 * spin.swingX - c2 * spin.swingXv + ax) * h;
-    spin.swingX += spin.swingXv * h;
-    spin.swingZv += (-w2 * spin.swingZ - c2 * spin.swingZv + az) * h;
-    spin.swingZ += spin.swingZv * h;
-    if (Math.abs(spin.swingX) > W.max) { spin.swingX = Math.sign(spin.swingX) * W.max; if (spin.swingXv * spin.swingX > 0) spin.swingXv = 0; }
-    if (Math.abs(spin.swingZ) > W.max) { spin.swingZ = Math.sign(spin.swingZ) * W.max; if (spin.swingZv * spin.swingZ > 0) spin.swingZv = 0; }
-  }
 }
 
-/* true while anything here still moves */
-export function spinBusy() {
-  return spin.core.busy ||
-    Math.abs(spin.swingX) > 0.02 || Math.abs(spin.swingXv) > 0.05 ||
-    Math.abs(spin.swingZ) > 0.02 || Math.abs(spin.swingZv) > 0.05;
-}
+/* true while the yaw still moves */
+export function spinBusy() { return spin.core.busy; }
 
 /* ---- pointer arbitration ---------------------------------------------- */
 
@@ -215,6 +187,7 @@ export function spinBusy() {
    All listeners are passive and nothing calls preventDefault.
 
    handlers: { canStart(e) → bool, start(), move(dxPx, degPerPx, farthestPx), end(vPxPerSec, degPerPx), tap(e) }
+   tap is only used by the rack (a tap on a photo panel); a tap on the figure does nothing.
    degPerPx is the spec's drag rate for the pointer type (touch or mouse). */
 export function initPointer(handlers) {
   const html = document.documentElement;

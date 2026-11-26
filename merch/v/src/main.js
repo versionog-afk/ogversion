@@ -3,14 +3,14 @@
 
    The inline gate in index.html decided that this device gets 3D and added
    class "gl" to <html>; the page is already painted and scrollable. */
-import { CFG, clamp, easeOutExpo } from './config.js';
+import { CFG, clamp } from './config.js';
 import { loadAssets } from './load.js';
 import { stage, initStage, measure, setCanvasOpacity } from './stage.js';
 import { world, buildScene, buildEnvironment, disposeScene } from './scene.js';
 import { tl, layout, update } from './timeline.js';
-import { spin, initSpin, initPointer, stepSpin, spinBusy, grab, drag, release, poke, yaw, detent } from './spin.js';
+import { spin, initSpin, initPointer, stepSpin, spinBusy, grab, drag, release, yaw, detent } from './spin.js';
 import { rack } from './rack.js';
-import { hud, initHud, say, setStatus, syncControls, hintSpun, hintPulse } from './hud.js';
+import { hud, initHud, say, setStatus, syncControls, hintSpun } from './hud.js';
 import { quality, startTier } from './quality.js';
 import { loop } from './loop.js';
 
@@ -22,7 +22,6 @@ const app = {
   ready: false,
   fallback: null,
   lastInput: -1e9,        // ms; idle sway runs for a few seconds after it
-  arrival: null,          // { t } while the shirt slides in
   rackDrag: false,        // the current horizontal gesture belongs to the rack
   hudTimer: 0,
   swayPhase: 0,
@@ -47,9 +46,10 @@ window.__m = {
   /* extras for the test scripts */
   get s() { return tl.s / stage.S; },
   get d() { return tl.d; },
+  get az() { return tl.pose.az * 180 / Math.PI; },
   get frames() { return loop.frames; },
   get running() { return loop.running; },
-  get lights() { return world.scene ? world.scene.children.filter(o => o.isLight).length : 0; },
+  get lights() { let n = 0; if (world.scene) world.scene.traverse(o => { if (o.isLight) n++; }); return n; },
   get shadows() { return stage.renderer ? stage.renderer.shadowMap.enabled : false; },
   at(id, t) { return (document.getElementById(id).getBoundingClientRect().top + scrollY - stage.S + t * stage.S) / stage.S; }
 };
@@ -58,9 +58,9 @@ if (forced) window.__m.dbg = { CFG, world, stage, tl, spin, rack, loop, quality,
 
 /* ---- fall back to the static page (5.4) ------------------------------- */
 
-/* The blocks a reader can be in, top to bottom. In static mode the two 3D
+/* The blocks a reader can be in, top to bottom. In static mode the 3D
    windows do not exist, so each names the block whose top takes its place. */
-const BLOCKS = [['#hero'], ['#spauda'], ['#sk', '#tiek'], ['#tiek'], ['#stovas', '.g'], ['.g'], ['#albumas']];
+const BLOCKS = [['#hero'], ['#priekis'], ['#ap', '#nugara'], ['#nugara'], ['#sk', '#tiek'], ['#tiek'], ['#stovas', '.g'], ['.g'], ['#albumas']];
 
 export function goStatic(reason) {
   if (app.fallback) return;
@@ -113,40 +113,29 @@ function frame(dt, now) {
   const moving = update(dt, now);
   if (tl.asleep) return false;          // past the rack: stop until the next scroll event
 
-  /* 2. arrival: the shirt slides in from the left while its flick spins it to the front */
-  let sliding = false;
-  if (app.arrival) {
-    app.arrival.t += dt;
-    const k = Math.min(1, app.arrival.t / CFG.ARRIVAL.time);
-    world.teeSwing.position.x = world.C.x + CFG.ARRIVAL.x * (1 - easeOutExpo(k));
-    if (k >= 1) app.arrival = null; else sliding = true;
-  }
-
-  /* 3. the hand: yaw and pendulum */
-  stepSpin(dt, tl.acc);
+  /* 2. the hand: yaw */
+  stepSpin(dt);
   const busy = spinBusy();
 
-  /* 4. idle sway for a few seconds after the last input, hero only */
+  /* 3. idle sway for a few seconds after the last input, hero only */
   const since = (now - app.lastInput) / 1000;
   let sway = 0, swaying = false;
   const W = CFG.SWAY;
-  if (!tl.calm && quality.tier < 3 && !busy && !tl.hudOff && since < W.life) {
+  if (!tl.calm && quality.tier < 3 && !busy && !tl.hudOff && !tl.nearOn && since < W.life) {
     app.swayPhase += dt;
     const env = clamp(app.swayPhase / 0.8, 0, 1) * clamp((W.life - since) / 1.2, 0, 1);
     sway = W.deg * Math.sin(2 * Math.PI * W.hz * app.swayPhase) * env;
     swaying = true;
   } else if (busy) app.swayPhase = 0;
 
-  world.teeYaw.rotation.y = (yaw() + sway) * rad;
-  world.teeSwing.rotation.z = spin.swingX * rad;
-  world.teeSwing.rotation.x = spin.swingZ * rad;
+  world.yaw.rotation.y = (yaw() + sway) * rad;
 
-  /* 5. draw; when only the idle sway is left, every second frame is enough */
+  /* 4. draw; when only the idle sway is left, every second frame is enough */
   app.odd = !app.odd;
-  const onlySway = swaying && !moving && !busy && !sliding;
+  const onlySway = swaying && !moving && !busy;
   if (!(onlySway && app.odd)) stage.renderer.render(world.scene, stage.camera);
 
-  return moving || busy || sliding || swaying || now < stage.fadeUntil;
+  return moving || busy || swaying || now < stage.fadeUntil;
 }
 
 function touch() { app.lastInput = performance.now(); loop.wake(); }
@@ -195,19 +184,17 @@ function lightsOn() {
     } else freeze = null;
   }
 
-  setStatus('Maketas');
+  setStatus('3D modelis');
   say('3D vaizdas paruoštas.');
   app.ready = true;
   clearTimeout(app.timeout);
 
   if (freeze === null && !tl.calm && window.scrollY < A.maxScroll * stage.S) {
-    /* arrival: a short flicker, then the shirt slides in as a synthetic flick
-       that the ordinary spin code lands on the front */
+    /* arrival: a short flicker while the figure turns in. The turn is a
+       synthetic flick from behind that the ordinary spin code lands on the front. */
     for (const [ms, o] of A.flicker) setTimeout(() => { if (!app.fallback) setCanvasOpacity(o); }, ms);
-    world.teeSwing.position.x = world.C.x + A.x;
-    app.arrival = { t: 0 };
-    spin.core.x = -A.omega / CFG.SPIN.k;
-    spin.core.release(A.omega);
+    spin.core.x = A.from;
+    spin.core.release(-A.from * CFG.SPIN.k);
     const settle = spin.onSettle;
     let done = false;
     const finish = () => { if (done) return; done = true; app.hudTimer = setTimeout(showHud, A.hudDelayMs); };
@@ -226,11 +213,15 @@ async function boot() {
   tl.calm = spin.calm = false;      // calm mode arrives with the "Įjungti 3D" button
   say('Kraunamas 3D vaizdas.');
 
-  /* not ready 10 s after app.js starts → static page, fetches aborted */
-  app.timeout = setTimeout(() => goStatic('timeout'), CFG.TIMEOUT_MS);
+  /* not ready 10 s after app.js starts → static page, fetches aborted
+     (20 s with ?3d=1: software rendering needs longer to compile and draw) */
+  app.timeout = setTimeout(() => goStatic('timeout'), forced ? CFG.TIMEOUT_LAB_MS : CFG.TIMEOUT_MS);
 
   if (!initStage()) return goStatic('webgl');
   const setP = p => html.style.setProperty('--p', p.toFixed(4));
+
+  /* the two photos inside the plates are narrower here than on the plain page: tell the browser before they load */
+  document.querySelectorAll('.story .ph img').forEach(img => { img.sizes = '(min-aspect-ratio:1/1) min(460px,40vw), 100vw'; });
 
   let assets;
   try {
@@ -242,7 +233,7 @@ async function boot() {
 
   try {
     initSpin();
-    buildScene(assets.gltf, assets.print, stage.renderer, quality.tier);
+    buildScene(assets.gltf, assets, stage.renderer, quality.tier);
     rack.build(world.scene, { world, stage, loop });
     measure(quality.tier);
     layout();
@@ -263,10 +254,9 @@ async function boot() {
   /* the hand */
   spin.onInput = touch;
   /* Degrees per pixel. Far away the spec's rate applies. Close up that rate
-     would throw the print across the screen, so there the chest surface
-     tracks the finger 1:1 instead (R = distance from the yaw axis to the print). */
-  const R = Math.max(0.05, Math.abs(world.P.z - world.C.z) + world.printSize.z / 2);
-  const rateAt = rate => Math.min(rate, tl.d / (R * stage.f) * 180 / Math.PI);
+     would throw the print across the screen, so there the cloth tracks the
+     finger 1:1 instead (printR = distance from the yaw axis to the prints). */
+  const rateAt = rate => Math.min(rate, tl.d / (world.printR * stage.f) * 180 / Math.PI);
   /* how many screen pixels one step along the rack is right now (4.2: 0.66·f/d) */
   const pxPerPanel = () => CFG.PANEL.step * stage.f / tl.d;
   initPointer({
@@ -282,11 +272,7 @@ async function boot() {
       touch();
     },
     end: (v, rate) => { if (app.rackDrag) rack.onDragEnd(v, pxPerPanel()); else release(v * rateAt(rate)); touch(); },
-    tap: e => {
-      if (tl.s >= tl.A.stPhotos) { rack.onTap(e); return; }
-      if (!tl.hudOff) { poke(); hintPulse(); }
-      spin.onInput();
-    }
+    tap: e => { if (tl.s >= tl.A.stPhotos) rack.onTap(e); }
   });
 
   /* wake on anything that can change the picture */

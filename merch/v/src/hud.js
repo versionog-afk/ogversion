@@ -2,7 +2,7 @@
    "Šviesa" button, Esc order and the bridge to the page's lightbox. */
 import { CFG } from './config.js';
 import { tl, setNear, toggleLight, clearLight } from './timeline.js';
-import { spin, turnTo, yaw, detent } from './spin.js';
+import { spin, turnTo, yaw, detent, facing } from './spin.js';
 import { loop } from './loop.js';
 
 const $ = id => document.getElementById(id);
@@ -26,7 +26,7 @@ function valueText(deg) {
   return a + '°';
 }
 
-/* Mirrors the shirt's angle into the controls. */
+/* Mirrors the figure's angle into the controls. */
 export function syncControls() {
   const d = detent();
   hud.front.setAttribute('aria-pressed', d === 0 ? 'true' : 'false');
@@ -47,12 +47,6 @@ export function hintSpun() {
   hud.hintGone = true;
   showHint();
 }
-export function hintPulse() {
-  if (hud.hintGone) return;
-  hud.hint.classList.remove('pulse');
-  void hud.hint.offsetWidth;              // restart the CSS animation
-  hud.hint.classList.add('pulse');
-}
 
 export function initHud() {
   hud.el = document.querySelector('.hud');
@@ -61,7 +55,8 @@ export function initHud() {
 
   hud.front.addEventListener('click', () => { setNear(false); turnTo(0, CFG.SPIN.zetaButton); spin.onInput(); });
   hud.back.addEventListener('click', () => { setNear(false); turnTo(180, CFG.SPIN.zetaButton); spin.onInput(); });
-  hud.near.addEventListener('click', () => { setNear(!tl.nearOn); spin.onInput(); });
+  /* the camera goes to the print that faces it: the chest lettering, or the map when the figure is turned round */
+  hud.near.addEventListener('click', () => { setNear(!tl.nearOn, facing() === 180); spin.onInput(); });
 
   /* keyboard rotation: arrows, Home and End on a real range input */
   hud.rot.addEventListener('input', () => {
@@ -71,7 +66,7 @@ export function initHud() {
     spin.onInput();
   });
   /* the input is 1 px large, so only a keyboard (or a screen reader) can focus it:
-     show where the focus is with a ring on the shirt and say which keys turn it */
+     show where the focus is with a ring on the figure and say which keys turn it */
   hud.rot.addEventListener('focus', () => { html.classList.add('kf'); showHint(); });
   hud.rot.addEventListener('blur', () => { html.classList.remove('kf'); showHint(); syncControls(); });
 
@@ -82,7 +77,7 @@ export function initHud() {
   tl.onLight = on => hud.light.setAttribute('aria-pressed', on ? 'true' : 'false');
   tl.onHud = off => { hud.el.inert = off; if (off && hud.el.contains(document.activeElement)) document.activeElement.blur(); };
 
-  /* shirt → controls and the live region */
+  /* figure → controls and the live region */
   spin.onSettle = d => {
     syncControls();
     if (d !== null && d !== hud.lastDetent) { hud.lastDetent = d; say(d === 0 ? 'Priekis.' : 'Nugara.'); }

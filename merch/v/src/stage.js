@@ -1,12 +1,12 @@
 /* Stage: renderer, canvas size, device pixel ratio, frame rects, the pose
-   solver and the projection of the giant HTML "47" as a sign behind the shirt. */
+   solver and the projection of the giant HTML "NA2" as a sign behind the figure. */
 import { WebGLRenderer, PerspectiveCamera, Vector3, ACESFilmicToneMapping, SRGBColorSpace } from 'three';
 import { CFG, rad } from './config.js';
 
 export const stage = {
   el: null,          // .stage, 100vw × 100svh, fixed
   canvas: null,      // 100vw × 100lvh, so a mobile toolbar never resizes the buffer
-  n: null,           // the giant "47" span of the <h1>
+  n: null,           // the giant "NA2" span of the <h1>
   renderer: null,
   camera: null,
   W: 1, H: 1,        // canvas size in CSS px
@@ -14,11 +14,11 @@ export const stage = {
   f: 1,              // focal length in CSS px
   fov: 40, portrait: true, coarse: false, dpr: 1,
   fadeUntil: 0,      // performance.now() until which a canvas fade is running
-  rect: {},          // frame rects by name: hero, print, n47, item
-  nRest: null        // rest rect of the 47 (no transform)
+  rect: {},          // frame rects by name: hero, print, item
+  nRest: null        // rest rect of the sign (no transform)
 };
 
-const FRAMES = { hero: '.fr-hero', print: '.fr-print', n47: '.fr-47', item: '.fr-item' };
+const FRAMES = { hero: '.fr-hero', print: '.fr-print', item: '.fr-item' };
 
 /* Creates the WebGL2 context and the renderer. Returns false when the
    browser cannot give us a context (the caller falls back to the static page). */
@@ -59,7 +59,7 @@ export function measure(tier) {
 
   for (const k in FRAMES) stage.rect[k] = box(stage.el.querySelector(FRAMES[k]));
 
-  /* the 47's rest rect, read without the transform the script writes */
+  /* the sign's rest rect, read without the transform the script writes */
   const keep = stage.n.style.transform;
   stage.n.style.transform = 'none';
   stage.nRest = box(stage.n);
@@ -112,7 +112,7 @@ export function applyPose(p) {
   cam.updateMatrixWorld();
 }
 
-/* ---- the 47 as a sign behind the shirt -------------------------------- */
+/* ---- the giant NA2 as a sign behind the figure ------------------------- */
 
 const signA = new Vector3(), signB = new Vector3(), _v = new Vector3(), _d = new Vector3();
 let lastSign = '';
@@ -124,7 +124,7 @@ function toPlane(px, py, z, out) {
   out.copy(cam.position).addScaledVector(_d, (z - cam.position.z) / _d.z);
 }
 
-/* Pins the 47's rest rect to the plane z = planeZ as seen from the hero pose. */
+/* Pins the sign's rest rect to the plane z = planeZ as seen from the hero pose. */
 export function setSign(heroPose, planeZ) {
   applyPose(heroPose);
   const r = stage.nRest;

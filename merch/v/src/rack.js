@@ -11,12 +11,12 @@
                                    uScroll   −1…8 from the scroll position (4.2)
                                    rail      0…1 how much of the rail is drawn
                                    railFrom, railTo   world x of the screen's left and right
-                                             edge at the tee: the stretch the draw covers
+                                             edge at the figure: the stretch the draw covers
                                    inPhotos  applied scroll is past stovas@0.90
-     rack.u                      −1…8, the item the camera looks at (−1 = the tee).
+     rack.u                      −1…8, the item the camera looks at (−1 = the figure).
                                  The timeline reads it for ITEM(u) every frame.
      rack.busy                   true while a flick, spring or swing is unsettled
-     rack.X(u)                   world x of item u (−1 → the tee, 0…8 → panels)
+     rack.X(u)                   world x of item u (−1 → the figure, 0…8 → panels)
      rack.onDragStart()          a horizontal gesture began past stovas@0.90
      rack.onDrag(dxPx, pxPerPanel)          pxPerPanel = 0.66·f/d right now, so Δu = −dxPx / pxPerPanel
      rack.onDragEnd(vPxPerSec, pxPerPanel)
@@ -42,14 +42,14 @@ export const rack = {
   X(u) {
     const P = CFG.PANEL, cx = this.cx || 0;
     if (u <= -1) return cx;
-    if (u < 0) return cx + (u + 1) * P.first;            // linear from the tee to the first panel
+    if (u < 0) return cx + (u + 1) * P.first;            // linear from the figure to the first panel
     return cx + P.first + P.step * Math.min(u, P.count - 1);
   },
 
   build(scene, ctx) {
     const R = CFG.RAIL, P = CFG.PANEL, w = ctx.world;
-    this.cx = w.C.x;
-    this.z = w.C.z;
+    this.cx = w.axis.x;
+    this.z = w.axis.z;
     this.x0 = this.cx + R.x0;
     this.x1 = this.X(P.count - 1) + R.x1pad;
     /* a unit box that grows from its left end, so scale.x draws the rail left to right */
@@ -66,7 +66,7 @@ export const rack = {
   update(dt, state) {
     this.u = clamp(state.uScroll, -1, CFG.PANEL.count - 1);
     this.current = Math.max(0, Math.round(this.u));
-    /* the rail draws across what the camera sees at the tee; the rest of
+    /* the rail draws across what the camera sees at the figure; the rest of
        its length (off screen to the right) is there once the draw is done */
     const p = state.rail;
     const from = Math.max(this.x0, state.railFrom);
