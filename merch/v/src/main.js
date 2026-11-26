@@ -6,11 +6,11 @@
 import { CFG, clamp } from './config.js';
 import { loadAssets } from './load.js';
 import { stage, initStage, measure, setCanvasOpacity } from './stage.js';
-import { world, buildScene, buildEnvironment, disposeScene } from './scene.js';
+import { world, shirt, stepShirt, buildScene, buildEnvironment, disposeScene } from './scene.js';
 import { tl, layout, update } from './timeline.js';
 import { spin, initSpin, initPointer, stepSpin, spinBusy, grab, drag, release, yaw, detent } from './spin.js';
 import { rack } from './rack.js';
-import { hud, initHud, say, setStatus, syncControls, hintSpun } from './hud.js';
+import { initControls, say, setColor } from './controls.js';
 import { quality, startTier } from './quality.js';
 import { loop } from './loop.js';
 
@@ -23,7 +23,7 @@ const app = {
   fallback: null,
   lastInput: -1e9,        // ms; idle sway runs for a few seconds after it
   rackDrag: false,        // the current horizontal gesture belongs to the rack
-  hudTimer: 0,
+  uiTimer: 0,
   swayPhase: 0,
   odd: false,
   abort: new AbortController(),
@@ -42,6 +42,9 @@ window.__m = {
   get detent() { return app.ready ? detent() : null; },
   get u() { return rack.u; },
   get L() { return tl.dark; },
+  /* the colour of the tee, 'black' or 'white'; assigning switches it like a press on a swatch */
+  get color() { return shirt.name; },
+  set color(name) { if (app.ready && !app.fallback) setColor(name); },
   get fallback() { return app.fallback; },
   /* extras for the test scripts */
   get s() { return tl.s / stage.S; },
@@ -54,54 +57,30 @@ window.__m = {
   at(id, t) { return (document.getElementById(id).getBoundingClientRect().top + scrollY - stage.S + t * stage.S) / stage.S; }
 };
 /* with ?3d=1 the test scripts may also reach inside */
-if (forced) window.__m.dbg = { CFG, world, stage, tl, spin, rack, loop, quality, buildEnvironment, goStatic: r => goStatic(r) };
+if (forced) window.__m.dbg = { CFG, world, stage, tl, spin, shirt, rack, loop, quality, buildEnvironment, goStatic: r => goStatic(r) };
 
 /* ---- fall back to the static page (5.4) ------------------------------- */
-
-/* The blocks a reader can be in, top to bottom. In static mode the 3D
-   windows do not exist, so each names the block whose top takes its place. */
-const BLOCKS = [['#hero'], ['#priekis'], ['#ap', '#nugara'], ['#nugara'], ['#sk', '#tiek'], ['#tiek'], ['#stovas', '.g'], ['.g'], ['#albumas']];
 
 export function goStatic(reason) {
   if (app.fallback) return;
   app.fallback = reason || 'unknown';
   clearTimeout(app.timeout);
-  clearTimeout(app.hudTimer);
+  clearTimeout(app.uiTimer);
   app.abort.abort();
   loop.block('static', true);
 
-  /* which block is being read (the one under a line a third of the way down
-     the viewport), and how far through it that line is */
-  let keep = null;
-  const y = window.scrollY, line = Math.round(window.innerHeight * 0.35);
-  if (y > 4) {
-    for (const [sel, stand] of BLOCKS) {
-      const el = document.querySelector(sel);
-      if (!el) continue;
-      const r = el.getBoundingClientRect();
-      if (r.height > 0 && r.top <= line && r.bottom > line) { keep = { sel: stand || sel, frac: stand ? 0 : (line - r.top) / r.height }; break; }
-    }
-    if (!keep) keep = { end: document.documentElement.scrollHeight - y };   // footer: keep the distance from the end
-  }
-
-  html.classList.remove('gl', 'rdy', 'hud-off', 'n-off', 'near', 'kf', 'drag');
-  html.style.removeProperty('--p');
-  if (stage.n) { stage.n.style.transform = ''; stage.n.style.opacity = ''; }
-  try { disposeScene(); } catch (e) { /* nothing to free */ }
-  if (stage.renderer) { try { stage.renderer.dispose(); stage.renderer.forceContextLoss(); } catch (e) { /* already gone */ } }
-  const c = document.getElementById('gl');
-  if (c) c.remove();
-  say('');
-
-  /* the one scripted scroll: bring the same block and fraction back under that line */
-  if (keep) {
-    let to;
-    if (keep.sel) {
-      const r = document.querySelector(keep.sel).getBoundingClientRect();
-      to = r.top + window.scrollY + keep.frac * r.height - line;
-    } else to = document.documentElement.scrollHeight - keep.end;
-    window.scrollTo({ top: Math.max(0, Math.round(to)), left: 0, behavior: 'instant' });
-  }
+  const change = () => {
+    html.classList.remove('gl', 'rdy', 'ui-off', 'n-off', 'sw-on', 'kf', 'drag');
+    html.style.removeProperty('--p');
+    if (stage.n) { stage.n.style.transform = ''; stage.n.style.opacity = ''; }
+    try { disposeScene(); } catch (e) { /* nothing to free */ }
+    if (stage.renderer) { try { stage.renderer.dispose(); stage.renderer.forceContextLoss(); } catch (e) { /* already gone */ } }
+    const c = document.getElementById('gl');
+    if (c) c.remove();
+    say('');
+  };
+  /* the page's own helper keeps the reader's place across the change (the one scripted scroll, see index.html) */
+  if (window.__keep) window.__keep(change); else change();
 }
 
 /* ---- frame ------------------------------------------------------------ */
@@ -109,7 +88,7 @@ export function goStatic(reason) {
 const rad = Math.PI / 180;
 
 function frame(dt, now) {
-  /* 1. scroll → camera, lights, HUD classes */
+  /* 1. scroll → camera, lights, classes */
   const moving = update(dt, now);
   if (tl.asleep) return false;          // past the rack: stop until the next scroll event
 
@@ -117,11 +96,14 @@ function frame(dt, now) {
   stepSpin(dt);
   const busy = spinBusy();
 
-  /* 3. idle sway for a few seconds after the last input, hero only */
+  /* 3. the colour of the tee easing from one to the other */
+  const tinting = stepShirt(dt);
+
+  /* 4. idle sway for a few seconds after the last input, hero only */
   const since = (now - app.lastInput) / 1000;
   let sway = 0, swaying = false;
   const W = CFG.SWAY;
-  if (!tl.calm && quality.tier < 3 && !busy && !tl.hudOff && !tl.nearOn && since < W.life) {
+  if (quality.tier < 3 && !busy && !tl.uiOff && since < W.life) {
     app.swayPhase += dt;
     const env = clamp(app.swayPhase / 0.8, 0, 1) * clamp((W.life - since) / 1.2, 0, 1);
     sway = W.deg * Math.sin(2 * Math.PI * W.hz * app.swayPhase) * env;
@@ -130,12 +112,12 @@ function frame(dt, now) {
 
   world.yaw.rotation.y = (yaw() + sway) * rad;
 
-  /* 4. draw; when only the idle sway is left, every second frame is enough */
+  /* 5. draw; when only the idle sway is left, every second frame is enough */
   app.odd = !app.odd;
-  const onlySway = swaying && !moving && !busy;
+  const onlySway = swaying && !moving && !busy && !tinting;
   if (!(onlySway && app.odd)) stage.renderer.render(world.scene, stage.camera);
 
-  return moving || busy || swaying || now < stage.fadeUntil;
+  return moving || busy || tinting || swaying || now < stage.fadeUntil;
 }
 
 function touch() { app.lastInput = performance.now(); loop.wake(); }
@@ -164,17 +146,14 @@ function watchResize() {
 
 /* ---- ready sequence (5.2) --------------------------------------------- */
 
-function showHud() {
-  html.classList.add('rdy');
-  hud.el.inert = tl.hudOff;
-  syncControls();
-}
+/* from here on the swatches may show and the cursor says the figure can be turned */
+function showUi() { html.classList.add('rdy'); }
 
 function lightsOn() {
   const A = CFG.ARRIVAL;
   let freeze = params.get('s');
   if (freeze !== null) {
-    /* ?s=1.25 or ?s=sk@0.62: jump there and pin the timeline (tests only) */
+    /* ?s=1.25 or ?s=info@0.15: jump there and pin the timeline (tests only) */
     const m = /^([a-z]+)@([\d.]+)$/.exec(freeze);
     const S = m ? window.__m.at(m[1], +m[2]) : parseFloat(freeze);
     if (isFinite(S)) {
@@ -184,12 +163,11 @@ function lightsOn() {
     } else freeze = null;
   }
 
-  setStatus('3D modelis');
   say('3D vaizdas paruoštas.');
   app.ready = true;
   clearTimeout(app.timeout);
 
-  if (freeze === null && !tl.calm && window.scrollY < A.maxScroll * stage.S) {
+  if (freeze === null && window.scrollY < A.maxScroll * stage.S) {
     /* arrival: a short flicker while the figure turns in. The turn is a
        synthetic flick from behind that the ordinary spin code lands on the front. */
     for (const [ms, o] of A.flicker) setTimeout(() => { if (!app.fallback) setCanvasOpacity(o); }, ms);
@@ -197,20 +175,19 @@ function lightsOn() {
     spin.core.release(-A.from * CFG.SPIN.k);
     const settle = spin.onSettle;
     let done = false;
-    const finish = () => { if (done) return; done = true; app.hudTimer = setTimeout(showHud, A.hudDelayMs); };
+    const finish = () => { if (done) return; done = true; app.uiTimer = setTimeout(showUi, A.uiDelayMs); };
     spin.onSettle = d => { spin.onSettle = settle; settle(d); finish(); };
     spin.onInput = () => { touch(); finish(); };    // any pointerdown takes over
   } else {
     /* reloaded mid-page: fade in at the pose for that scroll */
     setCanvasOpacity(1, A.fadeMs);
-    showHud();
+    showUi();
   }
   touch();
 }
 
 async function boot() {
   startTier(params);
-  tl.calm = spin.calm = false;      // calm mode arrives with the "Įjungti 3D" button
   say('Kraunamas 3D vaizdas.');
 
   /* not ready 10 s after app.js starts → static page, fetches aborted
@@ -219,9 +196,6 @@ async function boot() {
 
   if (!initStage()) return goStatic('webgl');
   const setP = p => html.style.setProperty('--p', p.toFixed(4));
-
-  /* the two photos inside the plates are narrower here than on the plain page: tell the browser before they load */
-  document.querySelectorAll('.story .ph img').forEach(img => { img.sizes = '(min-aspect-ratio:1/1) min(460px,40vw), 100vw'; });
 
   let assets;
   try {
@@ -238,7 +212,7 @@ async function boot() {
     measure(quality.tier);
     layout();
     rack.layout();
-    initHud();
+    initControls();
 
     /* compile off the main path, then one hidden frame so nothing hitches when the lights come on */
     setCanvasOpacity(0);
@@ -266,9 +240,9 @@ async function boot() {
       if (app.rackDrag) rack.onDragStart(); else grab();
       spin.onInput();
     },
-    move: (dx, rate, far) => {
+    move: (dx, rate) => {
       if (app.rackDrag) rack.onDrag(dx, pxPerPanel());
-      else { drag(dx * rateAt(rate)); if (far > CFG.HINT_PX) hintSpun(); }
+      else drag(dx * rateAt(rate));
       touch();
     },
     end: (v, rate) => { if (app.rackDrag) rack.onDragEnd(v, pxPerPanel()); else release(v * rateAt(rate)); touch(); },

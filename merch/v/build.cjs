@@ -10,8 +10,8 @@
  *   figure.glb                 the figure wearing the tee (meshopt, WebP textures)
  *   front.webp, front-hi.webp  chest print, 1024 px wide and (if the source is larger) full size
  *   back.webp                  back print, 1536 px wide, lossless line art
- *   art.json                   pixel sizes of both prints and the caption box of the back print
- *   ph/<name>-1600.jpg, -800.jpg   the three real photos, cropped to the garment
+ *   art.json                   pixel sizes of both prints and the boxes of the back artwork (artwork, map, caption)
+ *   ph/<name>-1600.jpg, -800.jpg   the three real photos, cropped to the garment (the first three tiles of the grid)
  *   og.jpg                     1200 × 630 share image
  *   g/01.jpg … g/09.jpg        1024 px copies of the nine grid photos
  *   app.js                     the bundle
@@ -57,7 +57,11 @@ const PHOTOS = {
   front: { file: 'worn-front.jpg', left: 0.160, top: 0.075, width: 0.705, aspect: 4 / 5 },
   print: { file: 'print-closeup.jpg', left: 0.040, top: 0.190, width: 0.920, aspect: 4 / 3 }
 };
+/* Boxes of the back print's texture (fractions, v from the top) when no meta.json says otherwise: the caption,
+   and from it the whole artwork (down to the caption's lower edge) and the map (ending a little above it). */
 const CAPTION_DEFAULT = { u0: 0.17, u1: 0.82, v0: 0.895, v1: 0.945 };
+const artDefault = c => ({ u0: 0, u1: 1, v0: 0, v1: c.v1 });
+const mapDefault = c => ({ u0: 0, u1: 1, v0: 0, v1: Math.max(0.05, c.v0 - 0.03) });
 
 function fail(msg) { console.error('build failed: ' + msg); process.exit(1); }
 function kb(n) { return (n / 1024).toFixed(1) + ' KB'; }
@@ -147,32 +151,38 @@ async function buildBack(sharp, src) {
   await sharp(src).resize({ width: 1536, withoutEnlargement: true }).webp({ nearLossless: true, quality: 60 }).toFile(out('back.webp'));
 }
 /* art.json: what the bundle needs to know about the prints. Rewritten from
-   the outputs each time; the caption box comes from ARTMETA when given and
-   is otherwise kept. */
+   the outputs each time; the three boxes of the back artwork come from
+   ARTMETA when given and are otherwise kept. */
 async function artInfo(sharp) {
   for (const f of ['front.webp', 'back.webp']) if (!fs.existsSync(out(f))) fail(f + ' missing: pass FRONT=<front.png> BACK=<back.png>');
   let kept = {};
   try { kept = JSON.parse(fs.readFileSync(out('art.json'), 'utf8')); } catch (e) { /* first build */ }
-  let caption = (kept.back && kept.back.captionBox) || CAPTION_DEFAULT;
+  let from = kept.back || {};
   if (process.env.ARTMETA) {
-    try {
-      const m = JSON.parse(fs.readFileSync(path.resolve(process.env.ARTMETA), 'utf8'));
-      caption = (m.back && m.back.captionBox) || CAPTION_DEFAULT;
-    } catch (e) { caption = CAPTION_DEFAULT; }     // a missing or broken meta.json: the documented default
+    try { from = JSON.parse(fs.readFileSync(path.resolve(process.env.ARTMETA), 'utf8')).back || {}; }
+    catch (e) { from = {}; }                       // a missing or broken meta.json: the documented defaults
   }
-  for (const k of ['u0', 'u1', 'v0', 'v1']) if (!(caption[k] >= 0 && caption[k] <= 1)) fail('captionBox.' + k + ' must be a number in 0…1');
+  const caption = from.captionBox || CAPTION_DEFAULT;
+  const boxes = { artBox: from.artBox || artDefault(caption), mapBox: from.mapBox || mapDefault(caption), captionBox: caption };
+  const back = {};
+  for (const name of Object.keys(boxes)) {
+    const b = boxes[name];
+    for (const k of ['u0', 'u1', 'v0', 'v1']) if (!(b[k] >= 0 && b[k] <= 1)) fail(name + '.' + k + ' must be a number in 0…1');
+    if (!(b.u1 > b.u0 && b.v1 > b.v0)) fail(name + ' is empty');
+    back[name] = { u0: b.u0, u1: b.u1, v0: b.v0, v1: b.v1 };
+  }
   const f = await sharp(out('front.webp')).metadata(), b = await sharp(out('back.webp')).metadata();
   const hi = fs.existsSync(out('front-hi.webp')) ? await sharp(out('front-hi.webp')).metadata() : null;
   const art = {
     front: { w: f.width, h: f.height, hiW: hi ? hi.width : 0 },
-    back: { w: b.width, h: b.height, captionBox: { u0: caption.u0, u1: caption.u1, v0: caption.v0, v1: caption.v1 } }
+    back: Object.assign({ w: b.width, h: b.height }, back)
   };
   fs.writeFileSync(out('art.json'), JSON.stringify(art) + '\n');
   return art;
 }
 
 /* 3. Photos. The three real photos (1600 and 800 px on the long side) and
-      the share image; then the 1024 px grid copies of /merch/p/01…09. */
+      the share image; then the 1024 px copies of /merch/p/01…09 for the grid and the rack. */
 async function buildPhotos(sharp, dir) {
   fs.mkdirSync(out('ph'), { recursive: true });
   const crop = async k => {
@@ -260,7 +270,7 @@ async function buildCode(esbuild, bytes, art, avg) {
   console.log([
     'figure.glb       ' + kb(model.size) + '  (' + model.tris + ' triangles; tee ' + n.tee + ', body ' + n.body + ', hair ' + n.hair + ', pants ' + n.pants + ', shoes ' + n.shoes + ', other ' + n.other + ', prints ' + (n.printFront + n.printBack) + ')',
     'front.webp       ' + kb(bytes.front) + '  (' + art.front.w + ' × ' + art.front.h + ')' + (art.front.hiW ? '   front-hi.webp ' + kb(bytes.frontHi) + ' (' + art.front.hiW + ' px wide)' : ''),
-    'back.webp        ' + kb(bytes.back) + '  (' + art.back.w + ' × ' + art.back.h + ', caption box ' + JSON.stringify(art.back.captionBox) + ')',
+    'back.webp        ' + kb(bytes.back) + '  (' + art.back.w + ' × ' + art.back.h + '; artwork ' + JSON.stringify(art.back.artBox) + ', caption ' + JSON.stringify(art.back.captionBox) + ')',
     'photos           ' + Object.keys(PHOTOS).map(k => k + ' ' + kb(size('ph/' + k + '-800.jpg')) + ' / ' + kb(size('ph/' + k + '-1600.jpg'))).join(', ') + ', og.jpg ' + kb(size('og.jpg')),
     'app.js           ' + kb(js.length) + '  (gzip ' + kb(jsGzip) + ')',
     'index.html       ' + kb(html.length) + '  (gzip ' + kb(htmlGzip) + ')',

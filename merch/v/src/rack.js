@@ -12,23 +12,22 @@
                                    rail      0…1 how much of the rail is drawn
                                    railFrom, railTo   world x of the screen's left and right
                                              edge at the figure: the stretch the draw covers
-                                   inPhotos  applied scroll is past stovas@0.90
+                                   inPhotos  applied scroll is past the start of the photos (stovas@1.35)
      rack.u                      −1…8, the item the camera looks at (−1 = the figure).
                                  The timeline reads it for ITEM(u) every frame.
      rack.busy                   true while a flick, spring or swing is unsettled
      rack.X(u)                   world x of item u (−1 → the figure, 0…8 → panels)
-     rack.onDragStart()          a horizontal gesture began past stovas@0.90
+     rack.onDragStart()          a horizontal gesture began past the start of the photos
      rack.onDrag(dxPx, pxPerPanel)          pxPerPanel = 0.66·f/d right now, so Δu = −dxPx / pxPerPanel
      rack.onDragEnd(vPxPerSec, pxPerPanel)
      rack.onTap(event)           tap inside the rack beat → panel raycast, returns true if handled
-     rack.step(delta)            the bar's ‹ › buttons
-     rack.current                index 0…8 of the photo the bar shows: max(0, round(u))
 
    Still to come here (next stage): panels on clips (one InstancedMesh),
    placeholders in the average colours (AVG in config.js), reflections, lazy
    textures, flick physics (a Flick1D from spin.js with friction 2.2, spring
-   110 / 0.8, detents on integers), per-panel swing springs, the tap raycast,
-   scroll reclaiming uUser, and the bar's logic. Until then u = uScroll. */
+   110 / 0.8, detents on integers), per-panel swing springs, the tap raycast
+   and scroll reclaiming uUser. Until then u = uScroll and the rack beat
+   shows the bare rail. */
 import { Mesh, BoxGeometry, MeshBasicMaterial } from 'three';
 import { CFG, clamp } from './config.js';
 
@@ -37,7 +36,6 @@ export const rack = {
   busy: false,
   rail: null,
   x0: 0, x1: 0,
-  current: 0,
 
   X(u) {
     const P = CFG.PANEL, cx = this.cx || 0;
@@ -65,7 +63,6 @@ export const rack = {
 
   update(dt, state) {
     this.u = clamp(state.uScroll, -1, CFG.PANEL.count - 1);
-    this.current = Math.max(0, Math.round(this.u));
     /* the rail draws across what the camera sees at the figure; the rest of
        its length (off screen to the right) is there once the draw is done */
     const p = state.rail;
@@ -78,6 +75,5 @@ export const rack = {
   onDragStart() {},
   onDrag() {},
   onDragEnd() {},
-  onTap() { return false; },
-  step() {}
+  onTap() { return false; }
 };
