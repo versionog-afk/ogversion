@@ -71,6 +71,7 @@ h1,.d{font-weight:500;text-transform:uppercase;letter-spacing:-.02em}
 /* top */
 .top{display:flex;justify-content:space-between;align-items:center;gap:12px;min-height:calc(var(--top) + var(--st));padding:var(--st) var(--gr) 0 var(--gl)}
 .top .brand{letter-spacing:.34em}
+.top a.m:focus-visible{outline-offset:1px}
 
 /* hero: name, line, then the tee edge to edge */
 .hero__t{container-type:inline-size;padding:6px var(--gr) 22px var(--gl)}
@@ -80,6 +81,7 @@ h1 .n{text-decoration-thickness:.07em;text-underline-offset:.11em}
 .hero__line span{display:inline-block}
 .hero__img img{height:clamp(83.34vw,calc(var(--vh) - var(--top) - var(--st) - 140px - 16vw),111.12vw);object-fit:cover;object-position:50% 49%}
 .hero__meta{display:flex;justify-content:space-between;align-items:center;gap:16px;padding:0 var(--gr) 0 var(--gl)}
+.hero__meta a:focus-visible{position:relative;z-index:1;box-shadow:0 0 0 6px #000}
 @media (min-width:560px){.hero__img img{height:clamp(83.34vw,calc(var(--vh) - var(--top) - var(--st) - 140px - 16vw),100vw)}}
 
 /* wide: text column left, the tee a viewport-high square flush right */
@@ -132,7 +134,8 @@ h1 .n{text-decoration-thickness:.07em;text-underline-offset:.11em}
 .spec__h{font-size:clamp(2.25rem,11.5vw,5rem);line-height:.95}
 .spec dl{margin-top:28px;border-top:1px solid var(--line);font:400 clamp(.9375rem,3.9vw,1rem)/1.5 var(--mono)}
 .spec dl div{display:grid;grid-template-columns:6rem minmax(0,1fr);gap:12px;align-items:baseline;padding:13px 0;border-bottom:1px solid var(--line)}
-.avail{margin-top:26px;font-size:var(--fs)}
+.spec dd{overflow-wrap:anywhere}
+.avail{margin-top:26px;font-size:var(--fs);text-wrap:balance}
 
 /* the bare grid */
 .g{display:grid;grid-template-columns:repeat(3,minmax(0,1fr))}
@@ -154,6 +157,7 @@ h1 .n{text-decoration-thickness:.07em;text-underline-offset:.11em}
 .foot{padding:0 var(--gr) calc(28px + var(--sb)) var(--gl)}
 .foot__in{border-top:1px solid var(--line);padding-top:22px}
 .foot__nav{display:flex;flex-wrap:wrap;gap:0 26px;margin:6px 0 10px}
+@media (max-width:374px){.foot__nav{gap:0 16px}}
 .foot__d{font-size:.9375rem;line-height:1.5;color:var(--ash);max-width:36em;text-wrap:balance}
 
 @media (min-width:900px){
@@ -176,6 +180,7 @@ h1 .n{text-decoration-thickness:.07em;text-underline-offset:.11em}
 
 /* lightbox */
 .v{position:fixed;inset:0;width:100%;height:100%;max-width:none;max-height:none;border:0;padding:0;background:#000;color:var(--bone);overflow:hidden;cursor:zoom-out;overscroll-behavior:contain;touch-action:pinch-zoom}
+.v.zm{touch-action:manipulation;overscroll-behavior:auto}
 .v:not([open]){display:none}
 .v[open]{display:block;animation:in .22s ease both}
 .v::backdrop{background:#000}
@@ -184,7 +189,7 @@ h1 .n{text-decoration-thickness:.07em;text-underline-offset:.11em}
 .v button{border:1px solid var(--line);cursor:pointer;min-width:46px;min-height:46px;padding:0 16px;text-indent:.26em}
 #vp,#vx{font-size:1rem;text-indent:0;padding:0}
 .v button:hover{border-color:var(--bone)}
-.v button:focus-visible{outline-offset:2px}
+.v button:focus-visible{outline-offset:-6px}
 .v__c{top:calc(var(--st) + 12px);right:calc(env(safe-area-inset-right,0px) + 12px)}
 .v__n{left:calc(env(safe-area-inset-left,0px) + 12px);bottom:calc(var(--sb) + 12px);padding:14px 4px 14px 12px}
 #vp{right:calc(env(safe-area-inset-right,0px) + 57px);bottom:calc(var(--sb) + 12px)}
@@ -214,7 +219,7 @@ h1 .n{text-decoration-thickness:.07em;text-underline-offset:.11em}
     <p class="hero__line"><span>Antraštė ne mūsų.</span> <span>Skaičius – mūsų.</span></p>
   </div>
   <button class="z hero__img" type="button" data-src="/merch/p/10.jpg" aria-haspopup="dialog">
-    <img src="/merch/p/10-1200.jpg" srcset="/merch/p/10-1200.jpg 1200w, /merch/p/10.jpg 4096w" sizes="(min-width:900px) and (min-aspect-ratio:1/1) min(100vh,64vw), (min-width:560px) and (min-aspect-ratio:1/1) min(100vh,56vw), (max-width:559px) min(100vw,400px), 100vw" width="1200" height="1200" fetchpriority="high" alt="Juodi marškinėliai „47 MILLION“ ant betono. Ant krūtinės – naujienų kortelė: violetinis naktinis reklaminis stendas ir balta antraštė.">
+    <img src="/merch/p/10-1200.jpg" srcset="/merch/p/10-1200.jpg 1200w, /merch/p/10.jpg 4096w" sizes="(min-aspect-ratio:1/1) and (max-height:500px) min(100vh,400px), (min-width:900px) and (min-aspect-ratio:1/1) min(100vh,64vw), (min-width:560px) and (min-aspect-ratio:1/1) min(100vh,56vw), (max-width:559px) min(100vw,400px), 100vw" width="1200" height="1200" fetchpriority="high" alt="Juodi marškinėliai „47 MILLION“ ant betono. Ant krūtinės – naujienų kortelė: violetinis naktinis reklaminis stendas ir balta antraštė.">
   </button>
   <div class="hero__meta">
     <p class="m">Maketas</p>
@@ -229,7 +234,7 @@ h1 .n{text-decoration-thickness:.07em;text-underline-offset:.11em}
   <div class="print">
     <div class="print__b">
       <h2 class="m" id="h-spauda">Spauda</h2>
-      <p class="lead">Ant krūtinės – naujienų kortelė. Viršuje – violetinis naktinis reklaminis stendas. Po juo – balta antraštė, maža žyma „Entertainment“ ir žurnalo ženklas.</p>
+      <p class="lead">Ant krūtinės&nbsp;– naujienų kortelė. Viršuje&nbsp;– violetinis naktinis reklaminis stendas. Po&nbsp;juo&nbsp;– balta antraštė, maža žyma „<span lang="en">Entertainment</span>“ ir žurnalo ženklas.</p>
       <figure>
         <blockquote class="q" lang="en">
           <p><span>‘GTA VI’ Sold <span class="n">47</span> Million Copies</span> <span>Over Launch Weekend—</span> <span>And Siphoned Players From</span> <span>‘Call Of Duty,’ ‘Fortnite’</span></p>
@@ -311,7 +316,7 @@ h1 .n{text-decoration-thickness:.07em;text-underline-offset:.11em}
 <script>
 (function(){
   var d=document,root=d.documentElement,v=d.getElementById('v'),vn=d.getElementById('vn'),vc=d.getElementById('vc');
-  var links=[].slice.call(d.querySelectorAll('button[data-src]')),vi=null,i=0,from=null;
+  var links=[].slice.call(d.querySelectorAll('button[data-src]')),vi=null,i=0,from=null,ts=-1e3;
   function two(n){return (n<10?'0':'')+n}
   function show(k){
     i=(k+links.length)%links.length;
@@ -322,6 +327,7 @@ h1 .n{text-decoration-thickness:.07em;text-underline-offset:.11em}
     if(vi) v.replaceChild(n,vi); else v.insertBefore(n,v.firstChild);
     vi=n;
     vn.textContent=two(i+1)+' / '+two(links.length);
+    var s=d.createElement('span');s.className='sr';s.style.textTransform='none';s.textContent='. '+n.alt;vn.appendChild(s);
   }
   function open(a){
     from=a;show(links.indexOf(a));
@@ -330,6 +336,7 @@ h1 .n{text-decoration-thickness:.07em;text-underline-offset:.11em}
     vc.focus();
   }
   function done(){
+    if(v.hasAttribute('open')) return;
     root.classList.remove('lock');
     if(vi){v.removeChild(vi);vi=null}
     if(from){try{from.focus({preventScroll:true})}catch(e){from.focus()}from=null}
@@ -340,14 +347,17 @@ h1 .n{text-decoration-thickness:.07em;text-underline-offset:.11em}
   }
   d.addEventListener('click',function(e){
     var a=e.target.closest&&e.target.closest('button[data-src]');
-    if(a) open(a);
+    if(!a||(e.detail&&e.timeStamp-ts<400)) return;
+    ts=e.timeStamp;open(a);
   });
   v.addEventListener('close',done);
+  if(window.visualViewport) visualViewport.addEventListener('resize',function(){v.classList.toggle('zm',visualViewport.scale>1.01)});
   v.addEventListener('click',function(e){
     var b=e.target.closest('button');
     if(b&&b.id==='vp') return show(i-1);
     if(b&&b.id==='vx') return show(i+1);
-    close();
+    if(!b&&e.detail&&e.timeStamp-ts<400) return;
+    ts=e.timeStamp;close();
   });
   d.addEventListener('keydown',function(e){
     if(!v.hasAttribute('open')) return;
