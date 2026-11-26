@@ -13,6 +13,17 @@ Kiekviena fazė baigiama rezultatu, kurį savininkas pamato ir patvirtina. Į `m
 
 Baigta, kai: puslapis susirenka ir atsidaro kompiuteryje (`npm run build`, `npm run serve`), o modelio tikrintuvas (`npm run check-model`) parodo figūrą.
 
+## Pasirinkti įrankiai (savininko patvirtinta 2026-11-26)
+
+| Dalis | Įrankis | Pastaba |
+|---|---|---|
+| Figūra | `makehumancommunity/mpfb2` Blender'yje | Laisva licencija (CC0 rezultatas), vaizdo plokštės nereikia; proporcijos ir poza pagal vaizdo įrašą |
+| Rūbai | Iškarpos pagal tikrus matmenis + Blender audinio simuliacija | Iškarpoms – `maria-korosteleva/GarmentCode` (tik iškarpų dalis; jo paties simuliatorius komerciškai nenaudotinas). `st-tech/ppf-contact-solver` – atsarginis variantas tikslesnei simuliacijai |
+| Spaudos | Savininko originalūs failai kaip tekstūros | Jei originalų nėra – atkurtos iš nuotraukų (`work3d/art/`) |
+| Bandymas iš tikros nuotraukos | `microsoft/TRELLIS.2` per `Comfy-Org/ComfyUI` arba `lightningpixel/modly` | Tik kaip formos pavyzdys; reikia NVIDIA plokštės; tikro žmogaus atvaizdui – jo sutikimas |
+
+Plačiau su licencijomis: `work3d/research/photo-to-3d.md`.
+
 ## 1 fazė. Įrankiai (skills)
 
 - Iš GitHub parenkami ir įdiegiami: tiltas, per kurį Claude valdo Blender; žmogaus figūros generatorius Blender'iui; audinio ir drabužių įrankiai; three.js / 3D puslapio įgūdžiai.
