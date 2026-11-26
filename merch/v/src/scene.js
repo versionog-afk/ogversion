@@ -32,7 +32,7 @@ export const world = {
   PB: new Box3(),            // back print (the whole decal: its canvas is taller than the artwork)
   art: null,                 // { c, w, h }: the back artwork (map and caption) on the cloth
   mapShot: null,             // { c, w, h }: the artwork plus the red line under its caption
-  hem: [],                   // the four bottom corners of T, relative to the yaw group
+  hemR: 0.3,                 // the hem never reaches further from the yaw axis than this
   TOP: new Box3(),           // head to just below the hem, as wide and deep as the tee
   C: new Vector3(),          // centre of TOP
   axis: new Vector3(),       // the yaw axis: centre of F in x and z
@@ -362,8 +362,7 @@ export function buildScene(gltf, images, renderer, tier) {
   content.add(world.lineRed);
 
   /* the hem, for the colour swatches: they only show while it is clear of them */
-  world.hem = [[T.min.x, T.min.z], [T.max.x, T.min.z], [T.min.x, T.max.z], [T.max.x, T.max.z]]
-    .map(([x, z]) => new Vector3(x - world.axis.x, T.min.y, z - world.axis.z));
+  world.hemR = Math.max(...[T.min.x, T.max.x].map(x => Math.max(...[T.min.z, T.max.z].map(z => Math.hypot(x - world.axis.x, z - world.axis.z)))));
 
   shirt.k = shirt.want = 0;
   shirt.name = 'black';

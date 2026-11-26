@@ -8,7 +8,7 @@
    back, the map in the dark, the other side, and front again as an item
    under the rail. */
 import { ART, CFG, clamp, lerp, smoothstep, easeInOutCubic, follow, rad } from './config.js';
-import { stage, fitDistance, makePose, mixPose, blankPose, applyPose, setSign, projectSign, setCanvasOpacity, lowestOnScreen } from './stage.js';
+import { stage, fitDistance, makePose, mixPose, blankPose, applyPose, setSign, projectSign, setCanvasOpacity, hemOnScreen } from './stage.js';
 import { world, setLights } from './scene.js';
 import { rack } from './rack.js';
 import { setClose } from './spin.js';
@@ -167,8 +167,7 @@ function swatchesWanted(s) {
   const W = CFG.SWATCH, row = stage.rect.sw;
   if (tl.darkWant || tl.asleep || s >= tl.A.stPhotos) return false;
   if (tl.info[0] - s - W.lip < row.y + row.h && tl.info[1] - s + W.lip > row.y) return false;
-  const hem = lowestOnScreen(world.hem, world.yaw.matrixWorld);
-  return hem < row.y - (tl.swOn ? W.off : W.on);
+  return hemOnScreen(world.axis, world.hemR, world.T.min.y) < row.y - (tl.swOn ? W.off : W.on);
 }
 
 /* ---- per frame -------------------------------------------------------- */

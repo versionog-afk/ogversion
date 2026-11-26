@@ -152,19 +152,19 @@ export function projectSign(opacity) {
 
 /* ---- the hem on screen ------------------------------------------------- */
 
-/* The lowest of the given points (the bottom corners of the tee, relative to
-   the figure's yaw group) as the camera sees them now: y in CSS px from the
-   top of the stage. Infinity when one of them is beside or behind the camera. */
-export function lowestOnScreen(points, matrix) {
+/* How low the hem of the tee can reach on screen from where the camera is
+   now, whichever way the figure is turned: the point of the hem's circle
+   (centre on the yaw axis, radius r, height y) nearest the camera, as y in
+   CSS px from the top of the stage. Infinity when that point is beside or
+   behind the camera. */
+export function hemOnScreen(axis, r, y) {
   const cam = stage.camera;
-  let y = -Infinity;
-  for (const p of points) {
-    _v.copy(p).applyMatrix4(matrix);
-    if (_d.copy(_v).applyMatrix4(cam.matrixWorldInverse).z > -cam.near) return Infinity;
-    _v.project(cam);
-    y = Math.max(y, (1 - _v.y) / 2 * stage.H);
-  }
-  return y;
+  _d.set(cam.position.x - axis.x, 0, cam.position.z - axis.z);
+  const len = _d.length();
+  if (len <= r) return Infinity;
+  _v.set(axis.x, y, axis.z).addScaledVector(_d, r / len);
+  if (_d.copy(_v).applyMatrix4(cam.matrixWorldInverse).z > -cam.near) return Infinity;
+  return (1 - _v.project(cam).y) / 2 * stage.H;
 }
 
 /* ---- canvas opacity (arrival flicker, jump dip, fades) ---------------- */

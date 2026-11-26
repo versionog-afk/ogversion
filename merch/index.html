@@ -127,11 +127,12 @@ html.gl .os{display:none}
 html.gl .o3{display:block}
 html.gl{
   /* --u: the unit of the hero cluster. The giant NA2 is 88u wide; the figure's slot starts 15u below its top
-     and is 86u high, so the cluster is 101u high. --cx / --ct: its centre line and its top. The row of colour
-     swatches keeps the 68 px above the bottom safe area. */
-  --u:min(1vw,calc((var(--vh) - 96px - var(--st) - var(--sb))/101));
+     and is 86u high, so the cluster is 101u high. --cx / --ct: its centre line and its top (at least 4u from
+     the top edge). The bottom 96 px above the safe area stay free: the row of colour swatches and the air
+     between it and the hem. */
+  --u:min(1vw,calc((var(--vh) - 96px - var(--st) - var(--sb))/105));
   --cx:50vw;
-  --ct:calc(var(--st) + max(14px,(var(--vh) - var(--st) - var(--sb) - 68px - 101*var(--u))/2));
+  --ct:calc(var(--st) + max(4*var(--u),(var(--vh) - var(--st) - var(--sb) - 96px - 101*var(--u))/2));
 }
 html.gl main{touch-action:pan-y pinch-zoom}
 
@@ -161,7 +162,7 @@ html.gl .fr{position:absolute;z-index:2;visibility:hidden;pointer-events:none}
 .fr-hero{left:calc(var(--cx) - 33*var(--u));top:calc(var(--ct) + 15*var(--u));width:calc(66*var(--u));height:calc(86*var(--u))}
 .fr-print{left:4vw;right:4vw;top:calc(var(--st) + var(--vh)*.05);bottom:calc(var(--sb) + 84px)}
 .fr-side{left:4vw;right:4vw;top:calc(var(--st) + var(--vh)*.05);bottom:calc(var(--sb) + 128px)}
-.fr-item{left:11vw;right:11vw;top:calc(var(--st) + var(--vh)*.09);height:calc(var(--vh)*.68)}
+.fr-item{left:11vw;right:11vw;top:calc(var(--st) + var(--vh)*.09);height:calc(var(--vh)*.64)}
 /* keyboard focus on the hidden range input shows as a ring round the figure */
 html.gl.kf:not(.ui-off) .fr-hero{visibility:visible;outline:2px solid var(--bone);outline-offset:-2px}
 
