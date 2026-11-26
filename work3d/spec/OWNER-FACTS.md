@@ -39,10 +39,19 @@ Unisex oversized t-shirt 220 g/m²
 - Back: print-ready artwork version 2, 29.7 cm wide and 33.6 cm tall including the caption (from the print file's page size). White ink on the black shirt, black ink on the white shirt.
 - Front: the „NA2“ lettering on the wearer's left chest. Printed width in centimetres: not supplied yet.
 
-## Shirt reference
+## Shirt reference (pictures supplied by the owner on 2026-11-26)
 
-- Lighter (cheaper) type: the cut is the one in `work3d/ref/shirt-black-front.png` and `work3d/ref/shirt-white-front.png` (the owner's pictures of both colours laid flat, each with the custom label inside the neck: the „NA2“ mark, white on the black shirt and black on the white one).
-- Heavier (more expensive) type: pictures with the custom label are still to come from the owner. Earlier pictures of a shorter blank shirt were withdrawn by the owner on 2026-11-26: do not use them.
+Four pictures of the shirts laid flat, front view, each with the custom label inside the neck (the „NA2“ mark, white on black shirts and black on white ones). They are kept locally in `work3d/ref/` under these names and are not in git:
+
+| file | type | colour | cut |
+|---|---|---|---|
+| `shirt-light-black-front.png` | lighter, cheaper (220 g/m² jersey) | black | long straight body, dropped shoulders, sleeves ending near the elbow |
+| `shirt-light-white-front.png` | lighter, cheaper (220 g/m² jersey) | white | same |
+| `shirt-heavy-black-front.png` | heavier, more expensive (370 g/m² interlock) | black | boxy: wide and short body, dropped shoulders with visible set-in sleeve seams, wide short sleeves, high rib collar |
+| `shirt-heavy-white-front.png` | heavier, more expensive (370 g/m² interlock) | white | same |
+
+- Four earlier pictures of the heavier shirt without the label (front and back, both colours) were withdrawn by the owner: do not use them.
+- No picture of the back of either type has been supplied.
 - Label artwork as a file: not supplied yet.
 
 ## Decisions by the owner (2026-11-26)
@@ -56,5 +65,4 @@ Unisex oversized t-shirt 220 g/m²
 - Whether the material text is shown in Lithuanian or in English.
 - Prices of the two types (and whether the colour changes the price).
 - Shipping: where, how long, what it costs.
-- Tape measurements of the shirts.
-- Pictures of the heavier type with its label.
+- Tape measurements of the shirts (both types).

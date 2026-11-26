@@ -13,7 +13,8 @@ Copy these files here on the working computer (the owner has them):
 | `originals/na2.webp` | the front lettering artwork with a transparent background |
 | `originals/map-black.png` | the back artwork, print-ready version 2 (29.7 × 35.4 cm page), rendered from `originals/pdf/map-black.pdf` at 300 ppi with `pdftocairo -png -r 300 -singlefile`; `art/make_textures.py` builds both textures from these two files |
 | `originals/pdf/` | the owner's print-ready PDFs (front lettering, back map in white ink and in black ink) |
-| `shirt-black-front.png` | the owner's picture of the shirt laid flat, front, with the custom neck label: the reference for the cut (earlier pictures of a different blank shirt were withdrawn by the owner and must not be used) |
+| `shirt-light-black-front.png`, `shirt-light-white-front.png` | the lighter, cheaper type (220 g/m² jersey) laid flat, front, with the custom neck label: reference for its cut |
+| `shirt-heavy-black-front.png`, `shirt-heavy-white-front.png` | the heavier, more expensive type (370 g/m² interlock) laid flat, front, with the label: reference for its cut |
 | `video.mov` | 9 s phone video of the person turning round; fit and drape reference |
 
 Rules:
