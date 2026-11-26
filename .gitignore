@@ -1,0 +1,15 @@
+node_modules
+__pycache__/
+*.pyc
+.DS_Store
+Thumbs.db
+# work folder: local-only material (owner's raw photos and video, downloads, outputs)
+work3d/out/
+work3d/ext/
+work3d/fonts/
+work3d/ref/*
+!work3d/ref/README.md
+!work3d/ref/print-closeup.jpg
+!work3d/ref/mockup-sheet.jpg
+work3d/tests/shots-na2/
+work3d/tests/tmp/

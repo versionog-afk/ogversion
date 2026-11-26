@@ -1,0 +1,106 @@
+<!doctype html><meta charset="utf-8"><title>na2 figure harness</title>
+<style>html,body{margin:0;height:100%;background:#000;overflow:hidden}canvas{display:block;width:100vw;height:100vh}</style>
+<canvas id="c"></canvas>
+<script type="importmap">{"imports":{"three":"/node_modules/three/build/three.module.js","three/addons/":"/node_modules/three/examples/jsm/"}}</script>
+<script type="module">
+// Inspection copy of the shared viewer (free camera views). Not the judge.
+// ?model=/path.glb  ?front=/path.png  ?back=/path.png  (paths are relative to the repository root)
+import * as THREE from 'three';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { MeshoptDecoder } from 'three/addons/libs/meshopt_decoder.module.js';
+import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+const q = new URLSearchParams(location.search);
+const canvas = document.getElementById('c');
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, preserveDrawingBuffer: true });
+renderer.setPixelRatio(1); renderer.setSize(innerWidth, innerHeight, false);
+renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.outputColorSpace = THREE.SRGBColorSpace;
+const scene = new THREE.Scene();
+scene.environment = new THREE.PMREMGenerator(renderer).fromScene(new RoomEnvironment(), 0.04).texture;
+const cam = new THREE.PerspectiveCamera(28, innerWidth / innerHeight, 0.05, 40);
+const key = new THREE.DirectionalLight(0xffffff, 2.5); key.position.set(1.5, 2, 2.5); scene.add(key);
+const fill = new THREE.DirectionalLight(0xffffff, 0.6); fill.position.set(-2, 0.5, 1.5); scene.add(fill);
+const rim1 = new THREE.DirectionalLight(0xb06cff, 6); rim1.position.set(-2, 1.2, -2); scene.add(rim1);
+const rim2 = new THREE.DirectionalLight(0xff5a7a, 4); rim2.position.set(2.2, 0.6, -1.8); scene.add(rim2);
+function checker() {
+  const c = document.createElement('canvas'); c.width = 1024; c.height = 1024; const g = c.getContext('2d'); const n = 8, s = c.width / n;
+  for (let y = 0; y < n; y++) for (let x = 0; x < n; x++) { g.fillStyle = (x + y) % 2 ? '#f2f2f2' : '#d1332a'; g.fillRect(x * s, y * s, s, s); }
+  g.fillStyle = '#000'; g.font = 'bold 70px sans-serif'; g.fillText('TOP-LEFT', 20, 80); g.fillText('BOTTOM-RIGHT', c.width - 560, c.height - 30);
+  const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.flipY = false; t.anisotropy = 8; return t;
+}
+const CLASSES = [['printFront', /print.?front/i], ['printBack', /print.?back/i], ['hair', /hair/i], ['pants', /pants|trouser/i], ['shoes', /shoe|sneaker|boot/i], ['body', /body|skin|mannequin|figure/i], ['tee', /tee|fabric|shirt|collar|rib|sleeve/i]];
+const groups = { printFront: [], printBack: [], hair: [], pants: [], shoes: [], body: [], tee: [], other: [] };
+const orig = new Map(); const errors = []; const uvTex = checker(); let texFront, texBack;
+const box = k => { const b = new THREE.Box3(); groups[k].forEach(m => b.expandByObject(m)); return b; };
+const r3 = v => [v.x, v.y, v.z].map(x => +x.toFixed(4));
+const P = {}; // anchor points
+try {
+  const loader = new GLTFLoader(); loader.setMeshoptDecoder(MeshoptDecoder);
+  const gltf = await loader.loadAsync(q.get('model'));
+  const tl = new THREE.TextureLoader();
+  texFront = await tl.loadAsync(q.get('front') || '/art/front.png'); texBack = await tl.loadAsync(q.get('back') || '/art/back.png');
+  for (const t of [texFront, texBack]) { t.colorSpace = THREE.SRGBColorSpace; t.flipY = false; t.anisotropy = 8; }
+  scene.add(gltf.scene); scene.updateMatrixWorld(true);
+  let tris = 0; const names = [];
+  gltf.scene.traverse(o => {
+    if (!o.isMesh) return;
+    const id = o.name + ' ' + (o.material && o.material.name || '') + ' ' + (o.parent && o.parent.name || '');
+    const cls = (CLASSES.find(c => c[1].test(o.name)) || CLASSES.find(c => c[1].test(id)) || ['other'])[0];
+    groups[cls].push(o); orig.set(o, o.material);
+    const g = o.geometry; const t = (g.index ? g.index.count : g.attributes.position.count) / 3; tris += t;
+    names.push({ mesh: o.name, material: o.material && o.material.name, cls, tris: Math.round(t), hasUV: !!g.attributes.uv, hasNormalMap: !!(o.material && o.material.normalMap), doubleSided: o.material && o.material.side === THREE.DoubleSide });
+  });
+  const all = new THREE.Box3().setFromObject(gltf.scene), tee = box('tee'), pf = box('printFront'), pb = box('printBack');
+  const avgNormal = k => { const n = new THREE.Vector3(), v = new THREE.Vector3(); let c = 0; for (const m of groups[k]) { const a = m.geometry.attributes.normal; if (!a) continue; const nm = new THREE.Matrix3().getNormalMatrix(m.matrixWorld); for (let i = 0; i < a.count; i += 7) { v.fromBufferAttribute(a, i).applyMatrix3(nm).normalize(); n.add(v); c++; } } return c ? r3(n.divideScalar(c)) : null; };
+  const size = b => b.isEmpty() ? null : r3(b.getSize(new THREE.Vector3())), cen = b => b.isEmpty() ? null : r3(b.getCenter(new THREE.Vector3()));
+  P.all = all; P.tee = tee.isEmpty() ? all : tee; P.pf = pf.isEmpty() ? P.tee : pf; P.pb = pb.isEmpty() ? P.tee : pb;
+  window.__stats = { triangles: Math.round(tris), meshes: names, figureSizeM: size(all), figureMinY: +all.min.y.toFixed(4), figureMaxY: +all.max.y.toFixed(4), teeSizeM: size(tee), teeCenterM: cen(tee), teeMinY: tee.isEmpty() ? null : +tee.min.y.toFixed(4), teeMaxY: tee.isEmpty() ? null : +tee.max.y.toFixed(4),
+    printFrontSizeM: size(pf), printFrontCenterM: cen(pf), printFrontNormal: avgNormal('printFront'), printBackSizeM: size(pb), printBackCenterM: cen(pb), printBackNormal: avgNormal('printBack'),
+    counts: Object.fromEntries(Object.entries(groups).map(([k, v]) => [k, v.length])) };
+} catch (e) { errors.push(String(e && e.message || e)); }
+function mats(look) {
+  const flat = look === 'clay' || look === 'uv';
+  const cloth = (m, color, sheen) => { const o = orig.get(m); const mat = new THREE.MeshPhysicalMaterial({ color: flat ? 0xc9c9c9 : color, roughness: flat ? 1 : 0.9, metalness: 0, side: o.side, normalMap: o.normalMap || null, aoMap: o.aoMap || null, sheen: flat ? 0 : 1, sheenRoughness: 0.75, sheenColor: new THREE.Color(sheen) }); if (o.normalMap) mat.normalScale.copy(o.normalScale); m.material = mat; };
+  groups.tee.forEach(m => cloth(m, 0x0e0e10, 0x2a2a30));
+  groups.pants.forEach(m => cloth(m, 0x34332f, 0x3a3832));
+  groups.other.forEach(m => cloth(m, 0x34332f, 0x3a3832));
+  for (const m of groups.body) { const o = orig.get(m); m.material = new THREE.MeshStandardMaterial({ color: flat ? 0xb9b9b9 : 0xd6cfc3, roughness: 0.62, metalness: 0, side: o.side, normalMap: o.normalMap || null }); }
+  for (const m of groups.hair) { const o = orig.get(m); m.material = new THREE.MeshStandardMaterial({ color: flat ? 0x9a9a9a : 0x2a2622, roughness: 0.7, metalness: 0, side: o.side, normalMap: o.normalMap || null }); }
+  for (const m of groups.shoes) { const o = orig.get(m); m.material = new THREE.MeshStandardMaterial({ color: flat ? 0xa9a9a9 : 0x121213, roughness: 0.55, metalness: 0, side: o.side }); }
+  for (const [k, tex] of [['printFront', texFront], ['printBack', texBack]]) for (const m of groups[k]) {
+    m.material = new THREE.MeshStandardMaterial({ map: look === 'uv' ? uvTex : look === 'clay' ? null : tex, color: look === 'clay' ? 0xe0a8a0 : 0xffffff, transparent: !flat, roughness: 0.82, metalness: 0, side: THREE.FrontSide, polygonOffset: true, polygonOffsetFactor: -4, polygonOffsetUnits: -4 });
+    m.renderOrder = 2;
+  }
+  const dark = look === 'dark';
+  scene.background = new THREE.Color(dark ? 0x050506 : 0x8f8f8f); scene.environmentIntensity = dark ? 0.35 : 1.0;
+  key.intensity = dark ? 1.6 : 2.5; fill.intensity = dark ? 0.15 : 0.6; rim1.visible = rim2.visible = dark;
+}
+const rad = a => a * Math.PI / 180, V = (x, y, z) => new THREE.Vector3(x, y, z);
+// view = [subject box name, yaw deg (0 = from +Z, the front), elevation deg, margin]
+const VIEWS = { 'full-front': ['all', 0, 2, 1.12], 'full-q34': ['all', 35, 6, 1.12], 'full-side': ['all', 90, 2, 1.12], 'full-back': ['all', 180, 2, 1.12], 'full-q34b': ['all', 215, 6, 1.12],
+  'top-front': ['top', 0, 0, 1.1], 'top-q34': ['top', 35, 5, 1.1], 'top-side': ['top', 90, 0, 1.1], 'top-back': ['top', 180, 0, 1.1], 'top-q34b': ['top', 215, 5, 1.1], 'top-low': ['top', 25, -20, 1.15], 'top-high': ['top', 160, 28, 1.15],
+  'close-front': ['pf', 10, 2, 2.6], 'close-back': ['pb', 190, 0, 1.25], 'neck': ['neck', 20, 12, 1.0] };
+function subject(name) {
+  if (name === 'all') return P.all.clone();
+  if (name === 'pf') return P.pf.clone(); if (name === 'pb') return P.pb.clone();
+  if (name === 'neck') { const t = P.tee; const c = V((t.min.x + t.max.x) / 2, t.max.y - 0.06, (t.min.z + t.max.z) / 2); return new THREE.Box3(c.clone().addScalar(-0.2), c.clone().addScalar(0.2)); }
+  const b = P.tee.clone(); b.max.y = P.all.max.y; b.min.y -= 0.06; return b; // head to just below the hem
+}
+function place(view) {
+  if (typeof view !== 'string') { const [tx, ty, tz, yaw, el, dist] = view; const a = rad(yaw), e = rad(el), c = V(tx, ty, tz), dir = V(Math.sin(a) * Math.cos(e), Math.sin(e), Math.cos(a) * Math.cos(e)); cam.position.copy(c).addScaledVector(dir, dist); cam.lookAt(c); return; }
+  const [sub, yaw, el, margin] = VIEWS[view] || VIEWS['top-front'], b = subject(sub), c = b.getCenter(V()), s = b.getSize(V());
+  const a = rad(yaw), e = rad(el), dir = V(Math.sin(a) * Math.cos(e), Math.sin(e), Math.cos(a) * Math.cos(e));
+  const w = Math.abs(Math.cos(a)) * s.x + Math.abs(Math.sin(a)) * s.z, h = s.y, t = Math.tan(rad(cam.fov / 2));
+  const d = Math.max(h / 2 / t, w / 2 / (t * cam.aspect)) * margin + Math.max(s.x, s.z) / 2;
+  cam.position.copy(c).addScaledVector(dir, d); cam.lookAt(c);
+}
+window.__views = Object.keys(VIEWS);
+window.__shoot = async (view, look) => {
+  renderer.setSize(innerWidth, innerHeight, false); cam.aspect = innerWidth / innerHeight; cam.updateProjectionMatrix();
+  mats(look); place(view); renderer.render(scene, cam);
+  await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
+  renderer.render(scene, cam); return true;
+};
+window.__errors = errors;
+if (!errors.length) await window.__shoot(q.get('view') || 'top-front', q.get('look') || 'studio');
+window.__ready = true;
+</script>

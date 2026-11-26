@@ -1,0 +1,19 @@
+{
+  "name": "ogversion-work3d",
+  "private": true,
+  "description": "Build and test tooling for the 3D /merch page. Nothing in this folder is deployed.",
+  "scripts": {
+    "build": "cd ../merch/v && NODE_PATH=../../work3d/node_modules node build.cjs",
+    "build:full": "cd ../merch/v && NODE_PATH=../../work3d/node_modules MODEL=../../work3d/model/current.glb FRONT=../../work3d/art/front.png BACK=../../work3d/art/back.png ARTMETA=../../work3d/art/meta.json PHOTOS=../../work3d/ref node build.cjs",
+    "serve": "node tests/serve.js 8361",
+    "shots": "node tests/shots-na2.js",
+    "check-model": "node harness/shot.js model/current.glb out/model-check"
+  },
+  "devDependencies": {
+    "@gltf-transform/cli": "^4.5.1",
+    "esbuild": "^0.28.2",
+    "playwright": "^1.63.0",
+    "sharp": "^0.35.5",
+    "three": "0.187.0"
+  }
+}
